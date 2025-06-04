@@ -25,7 +25,7 @@ public class Conexion {
                 e.printStackTrace();
             }
             
-            String ruta = "C:\\Users\\ernes\\eclipse-workspace\\SistemsaVentas\\bd\\dbcaja.mdb";
+            String ruta = "SistemsaVentas\\bd\\dbcaja.mdb";
             String url = "jdbc:ucanaccess://" + ruta;
             System.out.println("Intentando conectar a la base de datos: " + url);
             
