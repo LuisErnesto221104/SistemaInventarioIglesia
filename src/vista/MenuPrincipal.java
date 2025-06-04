@@ -36,7 +36,19 @@ public class MenuPrincipal extends JFrame {
                 System.exit(0);
             }
         });
-        
+
+        JMenuItem itemVentanaPrincipal = new JMenuItem("Ventana Principal", KeyEvent.VK_V);
+        JMenuItem itemConfiguracion = new JMenuItem("Configuración", KeyEvent.VK_C);
+        JMenuItem itemConfImpresora = new JMenuItem("Configuración de Impresora", KeyEvent.VK_I);
+        JMenuItem itemSaldoBanco = new JMenuItem("Saldo Banco", KeyEvent.VK_O);
+
+        menuArchivo.add(itemVentanaPrincipal);
+        menuArchivo.addSeparator();
+        menuArchivo.add(itemConfiguracion);
+        menuArchivo.add(itemConfImpresora);
+        menuArchivo.addSeparator();
+        menuArchivo.add(itemSaldoBanco);
+        menuArchivo.addSeparator();
         menuArchivo.add(itemSalir);
         
         // Menú Socios
@@ -48,47 +60,69 @@ public class MenuPrincipal extends JFrame {
         JMenuItem itemListadoSocios = new JMenuItem("Listado de Socios", KeyEvent.VK_L);
         
         menuSocios.add(itemNuevoSocio);
+        menuSocios.addSeparator();
         menuSocios.add(itemBuscarSocio);
         menuSocios.addSeparator();
         menuSocios.add(itemListadoSocios);
         
-        // Menú Préstamos
-        JMenu menuPrestamos = new JMenu("Préstamos");
+        // Menú Ver 
+        JMenu menuPrestamos = new JMenu("Ver");
         menuPrestamos.setMnemonic(KeyEvent.VK_P);
         
-        JMenuItem itemNuevoPrestamo = new JMenuItem("Nuevo Préstamo", KeyEvent.VK_N);
-        JMenuItem itemConsultarPrestamo = new JMenuItem("Consultar Préstamo", KeyEvent.VK_C);
-        JMenuItem itemListadoPrestamos = new JMenuItem("Listado de Préstamos", KeyEvent.VK_L);
+        JMenuItem itemNuevoPrestamo = new JMenuItem("Lista Socios Registrados", KeyEvent.VK_N);
+        JMenuItem itemConsultarPrestamo = new JMenuItem("Lista Socios Infantiles", KeyEvent.VK_C);
         
         menuPrestamos.add(itemNuevoPrestamo);
         menuPrestamos.add(itemConsultarPrestamo);
-        menuPrestamos.addSeparator();
-        menuPrestamos.add(itemListadoPrestamos);
         
-        // Menú Ahorros
-        JMenu menuAhorros = new JMenu("Ahorros");
-        menuAhorros.setMnemonic(KeyEvent.VK_H);
+        // Menú Movimientos
+        JMenu menuMovimientos = new JMenu("Movimientos");
+        menuMovimientos.setMnemonic(KeyEvent.VK_H);
         
-        JMenuItem itemDeposito = new JMenuItem("Depósito", KeyEvent.VK_D);
-        JMenuItem itemRetiro = new JMenuItem("Retiro", KeyEvent.VK_R);
-        JMenuItem itemConsultaSaldo = new JMenuItem("Consulta de Saldo", KeyEvent.VK_C);
+        JMenuItem itemDeposito = new JMenuItem("Movimiento de Socio", KeyEvent.VK_D);
+        JMenuItem itemRetiro = new JMenuItem("Retiro de Intereses", KeyEvent.VK_R);
+        JMenuItem itemDepositoBancario = new JMenuItem("Depositos Bancarios", KeyEvent.VK_M);
+        JMenuItem itemRetiroDepositoBancario = new JMenuItem("Retiro de Deposito Bancario", KeyEvent.VK_C);
+        JMenuItem itemOtros = new JMenuItem("Otros Moviminetos(Ingresos, Egresos, Gastos)");
+
         
-        menuAhorros.add(itemDeposito);
-        menuAhorros.add(itemRetiro);
-        menuAhorros.addSeparator();
-        menuAhorros.add(itemConsultaSaldo);
+        menuMovimientos.add(itemDeposito);
+        menuMovimientos.addSeparator();
+        menuMovimientos.add(itemRetiro);
+        menuMovimientos.addSeparator();
+        menuMovimientos.add(itemRetiroDepositoBancario);
+        menuMovimientos.add(itemDepositoBancario);
+        menuMovimientos.addSeparator();
+        menuMovimientos.add(itemOtros);
+
         
         // Menú Reportes
         JMenu menuReportes = new JMenu("Reportes");
         menuReportes.setMnemonic(KeyEvent.VK_R);
         
-        JMenuItem itemReporteIngresos = new JMenuItem("Reporte de Ingresos", KeyEvent.VK_I);
-        JMenuItem itemReporteEgresos = new JMenuItem("Reporte de Egresos", KeyEvent.VK_E);
-        JMenuItem itemReportePrestamos = new JMenuItem("Reporte de Préstamos", KeyEvent.VK_P);
+        JMenuItem itemReporteDiarioAdultos = new JMenuItem("Reporte Diarios de Adultos", KeyEvent.VK_I);
+        JMenuItem itemReporteDiarioInfantes = new JMenuItem("Reporte Diario de Infantes", KeyEvent.VK_E);
+        JMenuItem itemReporteDiario = new JMenuItem("Reporte Mensual en General ", KeyEvent.VK_T);
+        JMenuItem itemReporteMensualAdultos = new JMenuItem("Reporte Mensual Adultos", KeyEvent.VK_P);
+        JMenuItem itemReporteMensualInfantes = new JMenuItem("Reporte Mensual de Infantes", KeyEvent.VK_M);
+        JMenuItem itemReporteMensual = new JMenuItem("Reporte Mensual General", KeyEvent.VK_G);
+
+        JMenuItem itemReporteAnualAdultos = new JMenuItem("Reporte Anual Adultos", KeyEvent.VK_A);
+        JMenuItem itemReporteAnualInfantes = new JMenuItem("Reporte Anual de Infantes", KeyEvent.VK_N);
+        JMenuItem itemReporteAnual = new JMenuItem("Reporte Anual General", KeyEvent.VK_L);
         
-        menuReportes.add(itemReporteIngresos);
-        menuReportes.add(itemReporteEgresos);
-        menuReportes.add(itemReportePrestamos);
+        menuReportes.add(itemReporteDiarioAdultos);
+        menuReportes.add(itemReporteDiarioInfantes);
+        menuReportes.add(itemReporteDiario);
+        menuReportes.addSeparator();
+        menuReportes.add(itemReporteMensualAdultos);
+        menuReportes.add(itemReporteMensualInfantes);
+        menuReportes.add(itemReporteMensual);
+        menuReportes.addSeparator();
+        menuReportes.add(itemReporteAnualAdultos);
+        menuReportes.add(itemReporteAnualInfantes);
+        menuReportes.add(itemReporteAnual);
+
         
         // Menú Ayuda
         JMenu menuAyuda = new JMenu("Ayuda");
@@ -107,12 +141,22 @@ public class MenuPrincipal extends JFrame {
         
         menuAyuda.add(itemAcercaDe);
         
+        JMenu menuPremioAhorro = new JMenu("Premio Ahorro");
+        menuPremioAhorro.setMnemonic(KeyEvent.VK_W);
+        JMenuItem itemPremioAhorro = new JMenuItem("Premio Ahorro", KeyEvent.VK_W);
+
+        menuPremioAhorro.add(itemPremioAhorro);
+
+
+        
+
         // Añadir menús a la barra
         menuBar.add(menuArchivo);
         menuBar.add(menuSocios);
         menuBar.add(menuPrestamos);
-        menuBar.add(menuAhorros);
+        menuBar.add(menuMovimientos);
         menuBar.add(menuReportes);
+        menuBar.add(menuPremioAhorro);
         menuBar.add(menuAyuda);
         
         // Establecer la barra de menú

@@ -59,7 +59,7 @@ public class TestConexionStandalone {
         frame.setVisible(true);
         
         // Acción para el botón de prueba
-        testButton.addActionListener(e -> {
+        testButton.addActionListener(_ -> {
             testButton.setEnabled(false);
             textArea.setText("");
             new Thread(() -> {
@@ -72,7 +72,7 @@ public class TestConexionStandalone {
         });
         
         // Acción para el botón de cerrar
-        closeButton.addActionListener(e -> System.exit(0));
+        closeButton.addActionListener(_ -> System.exit(0));
         
         // Ejecutar la prueba automáticamente al inicio
         testButton.doClick();
