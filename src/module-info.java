@@ -9,5 +9,7 @@ open module SistemsaVentas {
 
     // Exportar paquetes
     exports conexion;
+    exports dao;
+    exports vista;
 }
 
