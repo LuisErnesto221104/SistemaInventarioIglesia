@@ -4,15 +4,14 @@ import java.sql.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
+import java.io.File;
 /**
  * Clase Conexion
  * Esta clase maneja la conexión a la base de datos.
  */
 
 
-public class Conexion {
-
-    Connection conexion = null; // Objeto de conexión a la base de datos
+public class Conexion {    Connection conexion = null; // Objeto de conexión a la base de datos
     Statement sentencia = null; // Objeto para ejecutar sentencias SQL
     
     public Conexion(){
@@ -25,9 +24,19 @@ public class Conexion {
                 System.out.println(" ERROR: No se pudo cargar el driver UCanAccess"); // Mensaje de error si no se encuentra el driver
                 System.out.println("Detalles: " + e.getMessage()); // Mostrar detalles del error
                 e.printStackTrace(); // Imprimir el stack trace para depuración
+            }            // Obtener la ruta absoluta al directorio actual de trabajo
+            String directorioActual = System.getProperty("user.dir");
+            String ruta = directorioActual + File.separator + "bd" + File.separator + "dbcaja.mdb"; // Ruta absoluta de la base de datos Access            // Verificar si el archivo de la BD existe
+            File archivoBD = new File(ruta);
+            if (!archivoBD.exists()) {
+                System.out.println("ADVERTENCIA: El archivo de la base de datos no existe en: " + ruta);
+                JOptionPane.showMessageDialog(null, "El archivo de la base de datos no existe en: " + ruta, 
+                                            "Error de Archivo", JOptionPane.ERROR_MESSAGE);
+                throw new Exception("Archivo de base de datos no encontrado: " + ruta);
+            } else {
+                System.out.println("Archivo de base de datos encontrado en: " + ruta);
             }
             
-            String ruta = "SistemsaVentas\\bd\\dbcaja.mdb"; // Ruta de la base de datos Access
             String url = "jdbc:ucanaccess://" + ruta; // URL de conexión a la base de datos
             System.out.println("Intentando conectar a la base de datos: " + url); // Mensaje informativo antes de intentar la conexión
             

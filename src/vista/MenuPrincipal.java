@@ -64,13 +64,36 @@ public class MenuPrincipal extends JFrame {
         menuSocios.add(itemBuscarSocio);
         menuSocios.addSeparator();
         menuSocios.add(itemListadoSocios);
-        
-        // Menú Ver 
+          // Menú Ver 
         JMenu menuPrestamos = new JMenu("Ver");
         menuPrestamos.setMnemonic(KeyEvent.VK_P);
         
         JMenuItem itemNuevoPrestamo = new JMenuItem("Lista Socios Registrados", KeyEvent.VK_N);
-        JMenuItem itemConsultarPrestamo = new JMenuItem("Lista Socios Infantiles", KeyEvent.VK_C);
+        JMenuItem itemConsultarPrestamo = new JMenuItem("Lista Socios Infantiles", KeyEvent.VK_C);        // Añadir acción al menú de socios registrados
+        itemNuevoPrestamo.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        new ListadoSociosAdultos();
+                    }
+                });
+            }
+        });
+        
+        // Añadir acción al menú de socios infantiles
+        itemConsultarPrestamo.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        new ListadoSociosInfantiles();
+                    }
+                });
+            }
+        });
         
         menuPrestamos.add(itemNuevoPrestamo);
         menuPrestamos.add(itemConsultarPrestamo);
