@@ -11,22 +11,25 @@ import java.awt.event.*;
  */
 public class LoginForm extends JFrame {
 
-    private JTextField txtUsuario;
-    private JPasswordField txtClave;
-    private JButton btnIngresar;
-    private JButton btnCancelar;
-    private UsuarioDAO usuarioDAO;
+    private JTextField txtUsuario; // Campo de texto para el usuario
+    private JPasswordField txtClave; // Campo de texto para la contraseña
+    private JButton btnIngresar; // Botón para ingresar al sistema
+    private JButton btnCancelar; // Botón para cancelar el acceso
+    private UsuarioDAO usuarioDAO; // DAO para manejar la validación de usuarios
 
+
+    //Constructor de la clase LoginForm
     public LoginForm() {
-        usuarioDAO = new UsuarioDAO();
-        inicializarComponentes();
+        usuarioDAO = new UsuarioDAO(); // Inicializar el DAO de usuario
+        inicializarComponentes(); // Llamar al método para inicializar los componentes del formulario
     }
 
+    // Método para inicializar los componentes del formulario
     private void inicializarComponentes() {
         // Configuración básica del formulario
-        setTitle("Acceso al Sistema");
+        setTitle("Acceso al Sistema"); 
         setSize(400, 300);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); 
         setLocationRelativeTo(null);
         setResizable(false);
         
@@ -80,7 +83,7 @@ public class LoginForm extends JFrame {
         btnIngresar.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                iniciarSesion();
+                iniciarSesion(); // Llamar al método para iniciar sesión
             }
         });
         panelBotones.add(btnIngresar);
@@ -91,7 +94,7 @@ public class LoginForm extends JFrame {
         btnCancelar.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                System.exit(0);
+                System.exit(0); // Cerrar la aplicación al hacer clic en cancelar
             }
         });
         panelBotones.add(btnCancelar);
@@ -111,10 +114,12 @@ public class LoginForm extends JFrame {
         setVisible(true);
     }
     
+
+    // Método para iniciar sesión
     private void iniciarSesion() {
-        String usuario = txtUsuario.getText();
-        String clave = new String(txtClave.getPassword());
-        
+        String usuario = txtUsuario.getText(); // Obtener el texto del campo de usuario
+        String clave = new String(txtClave.getPassword()); // Obtener el texto del campo de clave
+        // Validar que los campos no estén vacíos
         if (usuario.isEmpty() || clave.isEmpty()) {
             JOptionPane.showMessageDialog(this, 
                 "Por favor, ingrese usuario y contraseña", 
@@ -123,6 +128,10 @@ public class LoginForm extends JFrame {
             return;
         }
         
+        // Validar las credenciales del usuario
+         // Llamar al método del DAO para validar el usuario y la clave
+         // Si las credenciales son válidas, mostrar mensaje de bienvenida y abrir el menú principal
+         // Si no son válidas, mostrar mensaje de error y limpiar el campo de clave
         if (usuarioDAO.validarUsuario(usuario, clave)) {
             JOptionPane.showMessageDialog(this, 
                 "Bienvenido al Sistema", 

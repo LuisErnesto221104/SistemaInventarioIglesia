@@ -16,7 +16,7 @@ public class MenuPrincipal extends JFrame {
     
     private void inicializarComponentes() {
         // Configuración básica del formulario
-        setTitle("Sistema de Ventas - Menú Principal");
+        setTitle("Sistema de Caja - Menú Principal");
         setSize(900, 600);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
@@ -133,7 +133,7 @@ public class MenuPrincipal extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 JOptionPane.showMessageDialog(MenuPrincipal.this, 
-                    "Sistema de Ventas v1.0\nDesarrollado para Sistemsa", 
+                    "Sistema de Caja v1.0\nDesarrollado por Los Papus", 
                     "Acerca de", 
                     JOptionPane.INFORMATION_MESSAGE);
             }
@@ -169,7 +169,7 @@ public class MenuPrincipal extends JFrame {
         // Panel central con título
         JPanel panelCentral = new JPanel(new GridBagLayout());
         
-        JLabel lblBienvenida = new JLabel("Bienvenido al Sistema de Ventas");
+        JLabel lblBienvenida = new JLabel("Bienvenido al Sistema de Caja");
         lblBienvenida.setFont(new Font("Arial", Font.BOLD, 28));
         
         panelCentral.add(lblBienvenida);

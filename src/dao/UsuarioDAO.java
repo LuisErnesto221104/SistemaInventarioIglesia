@@ -9,10 +9,11 @@ import java.sql.*;
  */
 public class UsuarioDAO {
     
-    private Conexion conexion;
+    private Conexion conexion; // Objeto de conexión a la base de datos
     
+    // Constructor de la clase UsuarioDAO
     public UsuarioDAO() {
-        conexion = new Conexion();
+        conexion = new Conexion(); // Inicializa la conexión a la base de datos
     }
     
     /**
@@ -22,22 +23,23 @@ public class UsuarioDAO {
      * @return true si las credenciales son válidas, false en caso contrario
      */
     public boolean validarUsuario(String usuario, String clave) {
-        boolean esValido = false;
+        boolean esValido = false; // Variable para almacenar el resultado de la validación
         
         try {
-            String consulta = "SELECT * FROM Usuarios WHERE id = ? AND clave = ?";
-            PreparedStatement statement = conexion.getConexion().prepareStatement(consulta);
-            statement.setString(1, usuario);
-            statement.setString(2, clave);
+            String consulta = "SELECT * FROM Usuarios WHERE id = ? AND clave = ?"; // Consulta SQL para verificar las credenciales del usuario
+            PreparedStatement statement = conexion.getConexion().prepareStatement(consulta); // Prepara la sentencia SQL para evitar inyecciones SQL
+            statement.setString(1, usuario); // Establece el primer parámetro de la consulta (ID del usuario)
+            statement.setString(2, clave);// Establece el segundo parámetro de la consulta (clave del usuario)
             
-            ResultSet resultado = statement.executeQuery();
+            ResultSet resultado = statement.executeQuery(); // Ejecuta la consulta y obtiene el resultado
             
+            // Verifica si se obtuvo algún resultado
             if (resultado.next()) {
-                esValido = true;
+                esValido = true; // Si hay un resultado, las credenciales son válidas
             }
             
-            resultado.close();
-            statement.close();
+            resultado.close(); // Cierra el ResultSet para liberar recursos
+            statement.close(); // Cierra el PreparedStatement para liberar recursos
             
         } catch (SQLException e) {
             System.err.println("Error al validar usuario: " + e.getMessage());
