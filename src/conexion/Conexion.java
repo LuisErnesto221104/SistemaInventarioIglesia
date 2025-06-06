@@ -11,7 +11,8 @@ import java.io.File;
  */
 
 
-public class Conexion {    Connection conexion = null; // Objeto de conexión a la base de datos
+public class Conexion {    
+    Connection conexion = null; // Objeto de conexión a la base de datos
     Statement sentencia = null; // Objeto para ejecutar sentencias SQL
     
     public Conexion(){

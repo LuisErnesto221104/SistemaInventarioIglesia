@@ -29,9 +29,6 @@ Contiene todas las interfaces de usuario.
 - Driver UCanAccess para conexión a bases de datos Access
 - Las librerías necesarias se encuentran en la carpeta `Librerias`
 
-## Inicio del Sistema
-
-Para iniciar el sistema, ejecute el archivo `iniciar_sistema.bat` o ejecute la clase `vista.LoginForm` desde su IDE.
 
 ## Información de Acceso
 

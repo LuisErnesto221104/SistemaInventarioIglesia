@@ -16,16 +16,17 @@ import javax.swing.table.*;
  */
 public class ListadoSociosInfantiles extends JFrame {
     
-    private JTable tabla;
+    private JTable tabla; 
     private DefaultTableModel modelo;
     private JTextField txtBuscar;
     private SocioDAO socioDAO;
     private JLabel lblContador;
     
     public ListadoSociosInfantiles() {
-        socioDAO = new SocioDAO();
-        inicializarComponentes();
-        cargarDatos();
+        socioDAO = new SocioDAO(); // Inicializar DAO de socios
+         // Llamar al método para inicializar los componentes del formulario
+        inicializarComponentes(); 
+        cargarDatos(); // Cargar los datos al iniciar el formulario
     }
     
     private void inicializarComponentes() {
@@ -158,7 +159,6 @@ public class ListadoSociosInfantiles extends JFrame {
         // Obtener listado de socios infantiles
         java.util.List<Map<String, Object>> listaSocios = socioDAO.listarSociosInfantiles();
         
-        // Declarar variable para referencia al Label contador
         
         // Buscar el JLabel contador en los componentes
         Component[] components = ((JPanel)((JPanel)getContentPane().getComponent(0)).getComponent(0)).getComponents();
@@ -194,14 +194,15 @@ public class ListadoSociosInfantiles extends JFrame {
     }
     
     private void aplicarFiltro(String texto) {
-        TableRowSorter<TableModel> sorter = new TableRowSorter<>(tabla.getModel());
-        tabla.setRowSorter(sorter);
+        TableRowSorter<TableModel> sorter = new TableRowSorter<>(tabla.getModel()); // Crear un sorter para la tabla
+        tabla.setRowSorter(sorter); // Asignar el sorter a la tabla
         
+        // Aplicar filtro basado en el texto ingresado
         if (texto.length() == 0) {
-            sorter.setRowFilter(null);
+            sorter.setRowFilter(null); // Sin filtro
         } else {
             try {
-                sorter.setRowFilter(RowFilter.regexFilter("(?i)" + texto));
+                sorter.setRowFilter(RowFilter.regexFilter("(?i)" + texto)); // Filtro regex, ignorando mayúsculas y minúsculas
             } catch (java.util.regex.PatternSyntaxException ex) {
                 // Si el patrón de regex es inválido, no aplicar filtro
                 sorter.setRowFilter(null);
@@ -218,31 +219,32 @@ public class ListadoSociosInfantiles extends JFrame {
     private void actualizarContador() {
         int totalRegistros = tabla.getRowCount();
         int totalSinFiltro = modelo.getRowCount();
-        if (totalRegistros != totalSinFiltro) {
-            lblContador.setText("Total: " + totalRegistros + " de " + totalSinFiltro + " registros");
+        if (totalRegistros != totalSinFiltro) { // Si hay un filtro aplicado
+            lblContador.setText("Total: " + totalRegistros + " de " + totalSinFiltro + " registros"); // Mostrar total filtrado y total sin filtro
         } else {
-            lblContador.setText("Total: " + totalRegistros + " registros");
+            lblContador.setText("Total: " + totalRegistros + " registros"); // Mostrar solo el total de registros
         }
     }
     
     private void exportarDatos() {
-        JFileChooser fileChooser = new JFileChooser();
-        fileChooser.setDialogTitle("Guardar como");
+        JFileChooser fileChooser = new JFileChooser(); // Crear un JFileChooser para seleccionar el archivo
+        fileChooser.setDialogTitle("Guardar como"); // Título del diálogo
         
-        int userSelection = fileChooser.showSaveDialog(this);
+        int userSelection = fileChooser.showSaveDialog(this); // Mostrar el diálogo de guardado
         
-        if (userSelection == JFileChooser.APPROVE_OPTION) {
+        if (userSelection == JFileChooser.APPROVE_OPTION) { // El usuario ha seleccionado un archivo
+            // Intentar guardar los datos en el archivo seleccionado
             try {
-                java.io.File fileToSave = fileChooser.getSelectedFile();
+                java.io.File fileToSave = fileChooser.getSelectedFile(); // Obtener el archivo seleccionado
                 
                 // Si no tiene extensión, añadir .csv
                 String fileName = fileToSave.getAbsolutePath();
                 if (!fileName.toLowerCase().endsWith(".csv")) {
                     fileName += ".csv";
-                    fileToSave = new java.io.File(fileName);
+                    fileToSave = new java.io.File(fileName); // Actualizar el archivo con la extensión .csv
                 }
                 
-                java.io.FileWriter fw = new java.io.FileWriter(fileToSave);
+                java.io.FileWriter fw = new java.io.FileWriter(fileToSave); // Crear un FileWriter para escribir en el archivo
                 
                 // Escribir encabezados
                 for (int i = 0; i < modelo.getColumnCount(); i++) {
@@ -251,25 +253,26 @@ public class ListadoSociosInfantiles extends JFrame {
                         fw.append(",");
                     }
                 }
-                fw.append("\n");
+                fw.append("\n"); // Nueva línea después de los encabezados
                 
                 // Escribir datos
                 for (int i = 0; i < modelo.getRowCount(); i++) {
                     for (int j = 0; j < modelo.getColumnCount(); j++) {
                         Object valor = modelo.getValueAt(i, j);
                         if (valor != null) {
-                            fw.append(valor.toString().replace(",", ";"));
+                            fw.append(valor.toString().replace(",", ";")); // Reemplazar comas por punto y coma para evitar problemas en CSV
                         }
                         
+                        // Añadir coma entre columnas, excepto al final de la fila
                         if (j < modelo.getColumnCount() - 1) {
-                            fw.append(",");
+                            fw.append(","); // Añadir coma entre columnas
                         }
                     }
-                    fw.append("\n");
+                    fw.append("\n"); // Nueva línea después de cada fila
                 }
                 
-                fw.flush();
-                fw.close();
+                fw.flush(); // Asegurarse de que todos los datos se escriban en el archivo
+                fw.close(); // Cerrar el FileWriter
                 
                 JOptionPane.showMessageDialog(this, 
                     "Datos exportados exitosamente a: " + fileName, 
@@ -287,26 +290,6 @@ public class ListadoSociosInfantiles extends JFrame {
     }
     
     /**
-     * Método principal para pruebas
-     */
-    public static void main(String[] args) {
-        // Intentar aplicar el look and feel del sistema
-        try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        
-        // Crear y mostrar el formulario
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                new ListadoSociosInfantiles();
-            }
-        });
-    }
-    
-    /**
      * Imprime los datos de la tabla
      */
     private void imprimirDatos() {
@@ -314,19 +297,19 @@ public class ListadoSociosInfantiles extends JFrame {
             MessageFormat encabezado = new MessageFormat("Listado de Socios Infantiles");
             MessageFormat pie = new MessageFormat("Página {0}");
             
-            boolean mostrarDialogo = true;
-            boolean interactivo = true;
+            boolean mostrarDialogo = true; // Mostrar diálogo de impresión
+            boolean interactivo = true; // Permitir interacción con la impresora
             
-            JTable.PrintMode modo = JTable.PrintMode.FIT_WIDTH;
+            JTable.PrintMode modo = JTable.PrintMode.FIT_WIDTH; // Ajustar al ancho de la página
             
-            boolean status = tabla.print(modo, encabezado, pie, mostrarDialogo, null, interactivo);
+            boolean status = tabla.print(modo, encabezado, pie, mostrarDialogo, null, interactivo); // Imprimir la tabla
             
-            if (status) {
+            if (status) { // Si la impresión fue exitosa
                 JOptionPane.showMessageDialog(this, 
                     "Impresión enviada con éxito", 
                     "Información", 
                     JOptionPane.INFORMATION_MESSAGE);
-            } else {
+            } else { // Si la impresión fue cancelada
                 JOptionPane.showMessageDialog(this, 
                     "La impresión fue cancelada", 
                     "Impresión Cancelada", 
