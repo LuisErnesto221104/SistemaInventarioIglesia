@@ -3,12 +3,22 @@ package vista;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import javax.swing.border.EmptyBorder;
 
 /**
  * MenuPrincipal
  * Interfaz principal del sistema
  */
 public class MenuPrincipal extends JFrame {
+    
+    // Panel principal que contendrá todos los demás paneles
+    private JPanel panelContenido;
+    
+    // Panel que se muestra por defecto al iniciar
+    private JPanel panelBienvenida;
+    
+    // Paneles para las diferentes funcionalidades
+    private JPanel panelActual;
     
     public MenuPrincipal() {
         inicializarComponentes();
@@ -58,17 +68,12 @@ public class MenuPrincipal extends JFrame {
         JMenuItem itemNuevoSocio = new JMenuItem("Nuevo Socio", KeyEvent.VK_N);
         JMenuItem itemBuscarSocio = new JMenuItem("Buscar Socio", KeyEvent.VK_B);
         JMenuItem itemListadoSocios = new JMenuItem("Listado de Socios", KeyEvent.VK_L);
-        
-        // Añadir acción al menú de nuevo socio
+          // Añadir acción al menú de nuevo socio
         itemNuevoSocio.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        new NuevoSocioForm();
-                    }
-                });
+                JPanel panelNuevoSocio = new NuevoSocioPanelIntegrado(MenuPrincipal.this);
+                cambiarPanel(panelNuevoSocio, "nuevoSocio");
             }
         });
         
@@ -86,12 +91,8 @@ public class MenuPrincipal extends JFrame {
         itemNuevoPrestamo.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        new ListadoSociosAdultos();
-                    }
-                });
+                JPanel panelSociosAdultos = new ListadoSociosAdultosPanelIntegrado(MenuPrincipal.this);
+                cambiarPanel(panelSociosAdultos, "sociosAdultos");
             }
         });
         
@@ -99,12 +100,8 @@ public class MenuPrincipal extends JFrame {
         itemConsultarPrestamo.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        new ListadoSociosInfantiles();
-                    }
-                });
+                JPanel panelSociosInfantiles = new ListadoSociosInfantilesPanelIntegrado(MenuPrincipal.this);
+                cambiarPanel(panelSociosInfantiles, "sociosInfantiles");
             }
         });
         
@@ -197,18 +194,22 @@ public class MenuPrincipal extends JFrame {
         
         // Establecer la barra de menú
         setJMenuBar(menuBar);
+          // Crear panel de contenido principal que usará CardLayout para cambiar entre paneles
+        panelContenido = new JPanel();
+        panelContenido.setLayout(new CardLayout());
+        panelContenido.setBorder(new EmptyBorder(10, 10, 10, 10));
         
-        // Panel principal con una imagen o logo de fondo
-        JPanel panelPrincipal = new JPanel();
-        panelPrincipal.setLayout(new BorderLayout());
+        // Crear el panel de bienvenida (panel por defecto)
+        panelBienvenida = crearPanelBienvenida();
         
-        // Panel central con título
-        JPanel panelCentral = new JPanel(new GridBagLayout());
+        // Añadir el panel de bienvenida al panel de contenido
+        panelContenido.add(panelBienvenida, "bienvenida");
         
-        JLabel lblBienvenida = new JLabel("Bienvenido al Sistema de Caja");
-        lblBienvenida.setFont(new Font("Arial", Font.BOLD, 28));
+        // Establecer el panel actual al panel de bienvenida
+        panelActual = panelBienvenida;
         
-        panelCentral.add(lblBienvenida);
+        // Crear el panel principal con layout BorderLayout
+        JPanel panelPrincipal = new JPanel(new BorderLayout(0, 0));
         
         // Barra de estado en la parte inferior
         JPanel panelEstado = new JPanel(new BorderLayout());
@@ -221,7 +222,7 @@ public class MenuPrincipal extends JFrame {
         panelEstado.add(lblFecha, BorderLayout.EAST);
         
         // Añadir paneles al panel principal
-        panelPrincipal.add(panelCentral, BorderLayout.CENTER);
+        panelPrincipal.add(panelContenido, BorderLayout.CENTER);
         panelPrincipal.add(panelEstado, BorderLayout.SOUTH);
         
         // Añadir panel principal al formulario
@@ -249,5 +250,70 @@ public class MenuPrincipal extends JFrame {
                 new MenuPrincipal();
             }
         });
+    }
+    
+    /**
+     * Crea el panel de bienvenida que se muestra al inicio
+     * @return Panel de bienvenida
+     */
+    private JPanel crearPanelBienvenida() {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setBackground(new Color(240, 240, 240));
+        
+        JPanel panelCentro = new JPanel(new GridBagLayout());
+        panelCentro.setBackground(new Color(240, 240, 240));
+        
+        JLabel lblBienvenida = new JLabel("Bienvenido al Sistema de Caja");
+        lblBienvenida.setFont(new Font("Arial", Font.BOLD, 28));
+        
+        panelCentro.add(lblBienvenida);
+        
+        panel.add(panelCentro, BorderLayout.CENTER);
+        
+        return panel;
+    }
+    
+    /**
+     * Cambia el panel actual al panel especificado
+     * @param panel Panel a mostrar
+     * @param name Nombre identificador del panel
+     */
+    public void cambiarPanel(JPanel panel, String name) {
+        // Eliminar el panel actual si no es el de bienvenida
+        if (panelActual != panelBienvenida) {
+            panelContenido.remove(panelActual);
+        }
+        
+        // Añadir el nuevo panel
+        panelContenido.add(panel, name);
+        panelActual = panel;
+        
+        // Mostrar el nuevo panel
+        CardLayout cl = (CardLayout) panelContenido.getLayout();
+        cl.show(panelContenido, name);
+        
+        // Actualizar el panel
+        panelContenido.revalidate();
+        panelContenido.repaint();
+    }
+    
+    /**
+     * Restaura el panel de bienvenida
+     */
+    public void mostrarPanelBienvenida() {
+        // Si el panel actual no es el de bienvenida, lo eliminamos
+        if (panelActual != panelBienvenida) {
+            panelContenido.remove(panelActual);
+        }
+        
+        panelActual = panelBienvenida;
+        
+        // Mostrar el panel de bienvenida
+        CardLayout cl = (CardLayout) panelContenido.getLayout();
+        cl.show(panelContenido, "bienvenida");
+        
+        // Actualizar el panel
+        panelContenido.revalidate();
+        panelContenido.repaint();
     }
 }

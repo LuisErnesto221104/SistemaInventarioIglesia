@@ -11,10 +11,10 @@ import java.util.Calendar;
 import java.util.Date;
 
 /**
- * NuevoSocioForm
- * Ventana para agregar un nuevo socio (adulto o infantil)
+ * NuevoSocioPanelIntegrado
+ * Panel integrado para agregar un nuevo socio dentro del panel principal
  */
-public class NuevoSocioForm extends JFrame {
+public class NuevoSocioPanelIntegrado extends JPanel {
     
     private JTextField txtNoSocio;
     private JTextField txtNombres;
@@ -27,28 +27,42 @@ public class NuevoSocioForm extends JFrame {
     private JButton btnCalendario;
     private JComboBox<String> cboTipoSocio;
     private SocioDAO socioDAO;
+    private MenuPrincipal menuPrincipal;
     
-    public NuevoSocioForm() {
+    /**
+     * Constructor
+     * @param menuPrincipal Referencia al menú principal para poder volver
+     */
+    public NuevoSocioPanelIntegrado(MenuPrincipal menuPrincipal) {
+        this.menuPrincipal = menuPrincipal;
         socioDAO = new SocioDAO();
         inicializarComponentes();
     }
     
+    /**
+     * Inicializa los componentes del panel
+     */
     private void inicializarComponentes() {
-        setTitle("Nuevo Socio");
-        setSize(500, 450);
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        setLocationRelativeTo(null);
-        setResizable(false);
-        
-        // Panel principal
-        JPanel panelPrincipal = new JPanel(new BorderLayout(10, 10));
-        panelPrincipal.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        // Configuración del panel
+        setLayout(new BorderLayout(10, 10));
+        setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
         
         // Panel de título
-        JPanel panelTitulo = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        JLabel lblTitulo = new JLabel("REGISTRO DE NUEVO SOCIO");
+        JPanel panelTitulo = new JPanel(new BorderLayout());
+        
+        JButton btnVolver = new JButton("Volver");
+        btnVolver.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                menuPrincipal.mostrarPanelBienvenida();
+            }
+        });
+        
+        JLabel lblTitulo = new JLabel("REGISTRO DE NUEVO SOCIO", JLabel.CENTER);
         lblTitulo.setFont(new Font("Arial", Font.BOLD, 18));
-        panelTitulo.add(lblTitulo);
+        
+        panelTitulo.add(btnVolver, BorderLayout.WEST);
+        panelTitulo.add(lblTitulo, BorderLayout.CENTER);
         
         // Panel de formulario
         JPanel panelForm = new JPanel(new GridBagLayout());
@@ -90,7 +104,8 @@ public class NuevoSocioForm extends JFrame {
         gbc.gridy = 1;
         gbc.gridwidth = 2;
         panelForm.add(txtNoSocio, gbc);
-          // Fecha
+        
+        // Fecha
         JLabel lblFecha = new JLabel("Fecha:");
         gbc.gridx = 0;
         gbc.gridy = 2;
@@ -225,148 +240,33 @@ public class NuevoSocioForm extends JFrame {
         });
         panelBotones.add(btnGuardar);
         
+        JButton btnLimpiar = new JButton("Limpiar");
+        btnLimpiar.setPreferredSize(new Dimension(120, 30));
+        btnLimpiar.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                limpiarFormulario();
+            }
+        });
+        panelBotones.add(btnLimpiar);
+        
         JButton btnCancelar = new JButton("Cancelar");
         btnCancelar.setPreferredSize(new Dimension(120, 30));
         btnCancelar.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                dispose();
+                menuPrincipal.mostrarPanelBienvenida();
             }
         });
         panelBotones.add(btnCancelar);
         
         // Añadir paneles al panel principal
-        panelPrincipal.add(panelTitulo, BorderLayout.NORTH);
-        panelPrincipal.add(panelForm, BorderLayout.CENTER);
-        panelPrincipal.add(panelBotones, BorderLayout.SOUTH);
-        
-        // Añadir panel principal al formulario
-        add(panelPrincipal);
+        add(panelTitulo, BorderLayout.NORTH);
+        add(panelForm, BorderLayout.CENTER);
+        add(panelBotones, BorderLayout.SOUTH);
         
         // Actualizar número de socio al iniciar
         actualizarNumeroSocio();
-        
-        // Configurar acceso rápido con tecla Enter
-        getRootPane().setDefaultButton(btnGuardar);
-        
-        // Mostrar formulario
-        setVisible(true);
-    }
-    
-    /**
-     * Actualiza el número de socio en el campo correspondiente según el tipo seleccionado
-     */
-    private void actualizarNumeroSocio() {
-        int ultimoNumero;
-        
-        if (cboTipoSocio.getSelectedIndex() == 0) { // Adulto
-            ultimoNumero = socioDAO.obtenerUltimoNumeroSocioAdulto();
-        } else { // Infantil
-            ultimoNumero = socioDAO.obtenerUltimoNumeroSocioInfantil();
-        }
-        
-        txtNoSocio.setText(String.valueOf(ultimoNumero + 1));
-    }
-    
-    /**
-     * Guarda el socio en la base de datos
-     */
-    private void guardarSocio() {
-        // Validar campos obligatorios
-        if (txtNombres.getText().trim().isEmpty() || txtApellidos.getText().trim().isEmpty()) {
-            JOptionPane.showMessageDialog(this, 
-                "Los campos Nombre(s) y Apellido(s) son obligatorios", 
-                "Error de validación", 
-                JOptionPane.WARNING_MESSAGE);
-            return;
-        }
-        
-        try {
-            // Obtener valores de los campos
-            int noSocio = Integer.parseInt(txtNoSocio.getText());
-            String nombres = txtNombres.getText().trim();
-            String apellidos = txtApellidos.getText().trim();
-            String direccion = txtDireccion.getText().trim();
-            String telefono = txtTelefono.getText().trim();            Date fecha;
-            try {
-                SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
-                fecha = sdf.parse(txtFecha.getText());
-            } catch (ParseException ex) {
-                fecha = new Date();
-                ex.printStackTrace();
-            }
-            String presentadoPor = txtPresentadoPor.getText().trim();
-            String poblacion = txtPoblacion.getText().trim();
-            
-            boolean exito;
-            
-            // Insertar según el tipo de socio
-            if (cboTipoSocio.getSelectedIndex() == 0) { // Adulto
-                exito = socioDAO.insertarSocioAdulto(
-                    noSocio, nombres, apellidos, direccion, 
-                    telefono, fecha, presentadoPor, poblacion
-                );
-            } else { // Infantil
-                exito = socioDAO.insertarSocioInfantil(
-                    noSocio, fecha, nombres, apellidos, 
-                    direccion, telefono, presentadoPor, poblacion
-                );
-            }
-            
-            // Mostrar mensaje de éxito o error
-            if (exito) {
-                JOptionPane.showMessageDialog(this, 
-                    "Socio guardado con éxito", 
-                    "Operación exitosa", 
-                    JOptionPane.INFORMATION_MESSAGE);
-                
-                // Limpiar formulario y actualizar número de socio
-                limpiarFormulario();
-                actualizarNumeroSocio();
-            } else {
-                JOptionPane.showMessageDialog(this, 
-                    "Error al guardar el socio", 
-                    "Error", 
-                    JOptionPane.ERROR_MESSAGE);
-            }
-            
-        } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(this, 
-                "Número de socio inválido", 
-                "Error", 
-                JOptionPane.ERROR_MESSAGE);
-        }
-    }
-    
-    /**
-     * Limpia los campos del formulario
-     */
-    private void limpiarFormulario() {
-        txtNombres.setText("");
-        txtApellidos.setText("");
-        txtDireccion.setText("");
-        txtTelefono.setText("");        txtPoblacion.setText("");
-        txtPresentadoPor.setText("");
-        txtFecha.setText(new SimpleDateFormat("dd/MM/yyyy").format(new Date()));
-        txtNombres.requestFocus();
-    }
-    
-    /**
-     * Método principal para pruebas
-     */
-    public static void main(String[] args) {
-        try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                new NuevoSocioForm();
-            }
-        });
     }
     
     /**
@@ -374,7 +274,7 @@ public class NuevoSocioForm extends JFrame {
      */
     private void mostrarCalendario() {
         // Crear un frame temporal para el diálogo
-        final JDialog dialog = new JDialog(this, "Seleccionar Fecha", true);
+        final JDialog dialog = new JDialog(SwingUtilities.getWindowAncestor(this), "Seleccionar Fecha");
         dialog.setSize(300, 250);
         dialog.setLocationRelativeTo(this);
         dialog.setLayout(new BorderLayout());
@@ -504,5 +404,105 @@ public class NuevoSocioForm extends JFrame {
         
         daysPanel.revalidate();
         daysPanel.repaint();
+    }
+    
+    /**
+     * Actualiza el número de socio según el tipo seleccionado
+     */
+    private void actualizarNumeroSocio() {
+        int ultimoNumero;
+        
+        if (cboTipoSocio.getSelectedIndex() == 0) { // Adulto
+            ultimoNumero = socioDAO.obtenerUltimoNumeroSocioAdulto();
+        } else { // Infantil
+            ultimoNumero = socioDAO.obtenerUltimoNumeroSocioInfantil();
+        }
+        
+        txtNoSocio.setText(String.valueOf(ultimoNumero + 1));
+    }
+    
+    /**
+     * Guarda el socio en la base de datos
+     */
+    private void guardarSocio() {
+        // Validar campos obligatorios
+        if (txtNombres.getText().trim().isEmpty() || txtApellidos.getText().trim().isEmpty()) {
+            JOptionPane.showMessageDialog(this, 
+                "Los campos Nombre(s) y Apellido(s) son obligatorios", 
+                "Error de validación", 
+                JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        
+        try {
+            // Obtener valores de los campos
+            int noSocio = Integer.parseInt(txtNoSocio.getText());
+            String nombres = txtNombres.getText().trim();
+            String apellidos = txtApellidos.getText().trim();
+            String direccion = txtDireccion.getText().trim();
+            String telefono = txtTelefono.getText().trim();
+            Date fecha;
+            try {
+                SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+                fecha = sdf.parse(txtFecha.getText());
+            } catch (ParseException ex) {
+                fecha = new Date();
+                ex.printStackTrace();
+            }
+            String presentadoPor = txtPresentadoPor.getText().trim();
+            String poblacion = txtPoblacion.getText().trim();
+            
+            boolean exito;
+            
+            // Insertar según el tipo de socio
+            if (cboTipoSocio.getSelectedIndex() == 0) { // Adulto
+                exito = socioDAO.insertarSocioAdulto(
+                    noSocio, nombres, apellidos, direccion, 
+                    telefono, fecha, presentadoPor, poblacion
+                );
+            } else { // Infantil
+                exito = socioDAO.insertarSocioInfantil(
+                    noSocio, fecha, nombres, apellidos, 
+                    direccion, telefono, presentadoPor, poblacion
+                );
+            }
+            
+            // Mostrar mensaje de éxito o error
+            if (exito) {
+                JOptionPane.showMessageDialog(this, 
+                    "Socio guardado con éxito", 
+                    "Operación exitosa", 
+                    JOptionPane.INFORMATION_MESSAGE);
+                
+                // Limpiar formulario y actualizar número de socio
+                limpiarFormulario();
+                actualizarNumeroSocio();
+            } else {
+                JOptionPane.showMessageDialog(this, 
+                    "Error al guardar el socio", 
+                    "Error", 
+                    JOptionPane.ERROR_MESSAGE);
+            }
+            
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, 
+                "Número de socio inválido", 
+                "Error", 
+                JOptionPane.ERROR_MESSAGE);
+        }
+    }
+    
+    /**
+     * Limpia los campos del formulario
+     */
+    private void limpiarFormulario() {
+        txtNombres.setText("");
+        txtApellidos.setText("");
+        txtDireccion.setText("");
+        txtTelefono.setText("");
+        txtPoblacion.setText("");
+        txtPresentadoPor.setText("");
+        txtFecha.setText(new SimpleDateFormat("dd/MM/yyyy").format(new Date()));
+        txtNombres.requestFocus();
     }
 }
