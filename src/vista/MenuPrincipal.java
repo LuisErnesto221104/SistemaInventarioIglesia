@@ -59,6 +59,19 @@ public class MenuPrincipal extends JFrame {
         JMenuItem itemBuscarSocio = new JMenuItem("Buscar Socio", KeyEvent.VK_B);
         JMenuItem itemListadoSocios = new JMenuItem("Listado de Socios", KeyEvent.VK_L);
         
+        // Añadir acción al menú de nuevo socio
+        itemNuevoSocio.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        new NuevoSocioForm();
+                    }
+                });
+            }
+        });
+        
         menuSocios.add(itemNuevoSocio);
         menuSocios.addSeparator();
         menuSocios.add(itemBuscarSocio);

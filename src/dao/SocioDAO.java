@@ -3,6 +3,7 @@ package dao;
 import conexion.Conexion;
 import java.sql.*;
 import java.util.*;
+import java.util.Date;
 
 /**
  * SocioDAO
@@ -94,6 +95,151 @@ public class SocioDAO {
         }
         
         return listaSociosInfa; // Retornar la lista de socios infantiles obtenida
+    }
+    
+    /**
+     * Obtiene el último número de socio adulto
+     * @return Último número de socio adulto
+     */
+    public int obtenerUltimoNumeroSocioAdulto() {
+        int ultimoNumero = 0;
+        
+        try {
+            String consulta = "SELECT MAX(NoSocio) AS UltimoNumero FROM Socios";
+            Statement statement = conexion.getConexion().createStatement();
+            ResultSet resultado = statement.executeQuery(consulta);
+            
+            if (resultado.next()) {
+                ultimoNumero = resultado.getInt("UltimoNumero");
+            }
+            
+            resultado.close();
+            statement.close();
+            
+        } catch (SQLException e) {
+            System.err.println("Error al obtener el último número de socio adulto: " + e.getMessage());
+            e.printStackTrace();
+        }
+        
+        return ultimoNumero;
+    }
+    
+    /**
+     * Obtiene el último número de socio infantil
+     * @return Último número de socio infantil
+     */
+    public int obtenerUltimoNumeroSocioInfantil() {
+        int ultimoNumero = 0;
+        
+        try {
+            String consulta = "SELECT MAX(NoSocio) AS UltimoNumero FROM SociosInfa";
+            Statement statement = conexion.getConexion().createStatement();
+            ResultSet resultado = statement.executeQuery(consulta);
+            
+            if (resultado.next()) {
+                ultimoNumero = resultado.getInt("UltimoNumero");
+            }
+            
+            resultado.close();
+            statement.close();
+            
+        } catch (SQLException e) {
+            System.err.println("Error al obtener el último número de socio infantil: " + e.getMessage());
+            e.printStackTrace();
+        }
+        
+        return ultimoNumero;
+    }
+    
+    /**
+     * Inserta un nuevo socio adulto
+     * @param noSocio Número de socio
+     * @param nombres Nombres del socio
+     * @param apellidos Apellidos del socio
+     * @param direccion Dirección del socio
+     * @param telefono Teléfono del socio
+     * @param fechaRegistro Fecha de registro del socio
+     * @param presentadoPor Persona que presentó al socio
+     * @param poblacion Población del socio
+     * @return true si se insertó correctamente, false en caso contrario
+     */    public boolean insertarSocioAdulto(int noSocio, String nombres, String apellidos, 
+            String direccion, String telefono, java.util.Date fechaRegistro, 
+            String presentadoPor, String poblacion) {
+        
+        boolean exito = false;
+        
+        try {
+            String consulta = "INSERT INTO Socios (NoSocio, Nombres, Apellidos, Direccion, " +
+                    "Telefono, FechaRegistro, PresentadoPor, Poblacion) " +
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+            
+            PreparedStatement statement = conexion.getConexion().prepareStatement(consulta);
+            statement.setInt(1, noSocio);
+            statement.setString(2, nombres);
+            statement.setString(3, apellidos);
+            statement.setString(4, direccion);
+            statement.setString(5, telefono);
+            statement.setDate(6, new java.sql.Date(fechaRegistro.getTime()));
+            statement.setString(7, presentadoPor);
+            statement.setString(8, poblacion);
+            
+            int filasInsertadas = statement.executeUpdate();
+            
+            exito = (filasInsertadas > 0);
+            
+            statement.close();
+            
+        } catch (SQLException e) {
+            System.err.println("Error al insertar socio adulto: " + e.getMessage());
+            e.printStackTrace();
+        }
+        
+        return exito;
+    }
+    
+    /**
+     * Inserta un nuevo socio infantil
+     * @param noSocio Número de socio
+     * @param fecha Fecha de registro
+     * @param nombres Nombres del socio
+     * @param apellidos Apellidos del socio
+     * @param direccion Dirección del socio
+     * @param telefono Teléfono del socio
+     * @param presentadoPor Persona que presentó al socio
+     * @param poblacion Población del socio
+     * @return true si se insertó correctamente, false en caso contrario
+     */    public boolean insertarSocioInfantil(int noSocio, java.util.Date fecha, String nombres, String apellidos, 
+            String direccion, String telefono, String presentadoPor, String poblacion) {
+        
+        boolean exito = false;
+        
+        try {
+            String consulta = "INSERT INTO SociosInfa (NoSocio, Fecha, Nombres, Apellidos, " +
+                    "Direccion, Telefono, PresentadoPor, Poblacion) " +
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+            
+            PreparedStatement statement = conexion.getConexion().prepareStatement(consulta);
+            statement.setInt(1, noSocio);
+            statement.setDate(2, new java.sql.Date(fecha.getTime()));
+            statement.setString(3, nombres);
+            statement.setString(4, apellidos);
+            statement.setString(5, direccion);
+            statement.setString(6, telefono);
+            statement.setString(7, presentadoPor);
+            statement.setString(8, poblacion);
+            
+            int filasInsertadas = statement.executeUpdate();
+            
+            exito = (filasInsertadas > 0);
+            
+            statement.close();
+            
+        } catch (SQLException e) {
+            System.err.println("Error al insertar socio infantil: " + e.getMessage());
+            e.printStackTrace();
+        }
+        
+        return exito;
     }
     
     /**

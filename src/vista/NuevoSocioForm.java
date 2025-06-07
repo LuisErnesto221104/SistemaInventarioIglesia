@@ -1,0 +1,508 @@
+package vista;
+
+import dao.SocioDAO;
+import javax.swing.*;
+import javax.swing.text.MaskFormatter;
+import java.awt.*;
+import java.awt.event.*;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+
+/**
+ * NuevoSocioForm
+ * Ventana para agregar un nuevo socio (adulto o infantil)
+ */
+public class NuevoSocioForm extends JFrame {
+    
+    private JTextField txtNoSocio;
+    private JTextField txtNombres;
+    private JTextField txtApellidos;
+    private JTextField txtDireccion;
+    private JFormattedTextField txtTelefono;
+    private JTextField txtPoblacion;
+    private JTextField txtPresentadoPor;
+    private JFormattedTextField txtFecha;
+    private JButton btnCalendario;
+    private JComboBox<String> cboTipoSocio;
+    private SocioDAO socioDAO;
+    
+    public NuevoSocioForm() {
+        socioDAO = new SocioDAO();
+        inicializarComponentes();
+    }
+    
+    private void inicializarComponentes() {
+        setTitle("Nuevo Socio");
+        setSize(500, 450);
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        setLocationRelativeTo(null);
+        setResizable(false);
+        
+        // Panel principal
+        JPanel panelPrincipal = new JPanel(new BorderLayout(10, 10));
+        panelPrincipal.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        
+        // Panel de título
+        JPanel panelTitulo = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        JLabel lblTitulo = new JLabel("REGISTRO DE NUEVO SOCIO");
+        lblTitulo.setFont(new Font("Arial", Font.BOLD, 18));
+        panelTitulo.add(lblTitulo);
+        
+        // Panel de formulario
+        JPanel panelForm = new JPanel(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(5, 5, 5, 5);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        
+        // Tipo de socio
+        JLabel lblTipoSocio = new JLabel("Tipo de socio:");
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        panelForm.add(lblTipoSocio, gbc);
+        
+        cboTipoSocio = new JComboBox<>(new String[]{"Adulto", "Infantil"});
+        gbc.gridx = 1;
+        gbc.gridy = 0;
+        gbc.gridwidth = 2;
+        panelForm.add(cboTipoSocio, gbc);
+        
+        // Agregar un listener al combobox para actualizar el número de socio
+        cboTipoSocio.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                actualizarNumeroSocio();
+            }
+        });
+        
+        // No. Socio
+        JLabel lblNoSocio = new JLabel("No. Socio:");
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        gbc.gridwidth = 1;
+        panelForm.add(lblNoSocio, gbc);
+        
+        txtNoSocio = new JTextField(10);
+        txtNoSocio.setEditable(false);
+        txtNoSocio.setBackground(new Color(240, 240, 240));
+        gbc.gridx = 1;
+        gbc.gridy = 1;
+        gbc.gridwidth = 2;
+        panelForm.add(txtNoSocio, gbc);
+          // Fecha
+        JLabel lblFecha = new JLabel("Fecha:");
+        gbc.gridx = 0;
+        gbc.gridy = 2;
+        gbc.gridwidth = 1;
+        panelForm.add(lblFecha, gbc);
+        
+        JPanel panelFecha = new JPanel(new BorderLayout(5, 0));
+        try {
+            MaskFormatter formatoFecha = new MaskFormatter("##/##/####");
+            formatoFecha.setPlaceholderCharacter('_');
+            txtFecha = new JFormattedTextField(formatoFecha);
+            txtFecha.setText(new SimpleDateFormat("dd/MM/yyyy").format(new Date()));
+        } catch (ParseException e) {
+            txtFecha = new JFormattedTextField();
+            txtFecha.setText(new SimpleDateFormat("dd/MM/yyyy").format(new Date()));
+            e.printStackTrace();
+        }
+        
+        btnCalendario = new JButton("...");
+        btnCalendario.setPreferredSize(new Dimension(30, 25));
+        btnCalendario.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                mostrarCalendario();
+            }
+        });
+        
+        panelFecha.add(txtFecha, BorderLayout.CENTER);
+        panelFecha.add(btnCalendario, BorderLayout.EAST);
+        
+        gbc.gridx = 1;
+        gbc.gridy = 2;
+        gbc.gridwidth = 2;
+        panelForm.add(panelFecha, gbc);
+        
+        // Nombres
+        JLabel lblNombres = new JLabel("Nombre(s):");
+        gbc.gridx = 0;
+        gbc.gridy = 3;
+        gbc.gridwidth = 1;
+        panelForm.add(lblNombres, gbc);
+        
+        txtNombres = new JTextField(20);
+        gbc.gridx = 1;
+        gbc.gridy = 3;
+        gbc.gridwidth = 2;
+        panelForm.add(txtNombres, gbc);
+        
+        // Apellidos
+        JLabel lblApellidos = new JLabel("Apellido(s):");
+        gbc.gridx = 0;
+        gbc.gridy = 4;
+        gbc.gridwidth = 1;
+        panelForm.add(lblApellidos, gbc);
+        
+        txtApellidos = new JTextField(20);
+        gbc.gridx = 1;
+        gbc.gridy = 4;
+        gbc.gridwidth = 2;
+        panelForm.add(txtApellidos, gbc);
+        
+        // Dirección
+        JLabel lblDireccion = new JLabel("Dirección:");
+        gbc.gridx = 0;
+        gbc.gridy = 5;
+        gbc.gridwidth = 1;
+        panelForm.add(lblDireccion, gbc);
+        
+        txtDireccion = new JTextField(30);
+        gbc.gridx = 1;
+        gbc.gridy = 5;
+        gbc.gridwidth = 2;
+        panelForm.add(txtDireccion, gbc);
+        
+        // Teléfono
+        JLabel lblTelefono = new JLabel("Teléfono:");
+        gbc.gridx = 0;
+        gbc.gridy = 6;
+        gbc.gridwidth = 1;
+        panelForm.add(lblTelefono, gbc);
+        
+        MaskFormatter formatoTelefono = null;
+        try {
+            formatoTelefono = new MaskFormatter("##########");
+            formatoTelefono.setPlaceholderCharacter('_');
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        
+        txtTelefono = new JFormattedTextField(formatoTelefono);
+        gbc.gridx = 1;
+        gbc.gridy = 6;
+        gbc.gridwidth = 2;
+        panelForm.add(txtTelefono, gbc);
+        
+        // Población
+        JLabel lblPoblacion = new JLabel("Población:");
+        gbc.gridx = 0;
+        gbc.gridy = 7;
+        gbc.gridwidth = 1;
+        panelForm.add(lblPoblacion, gbc);
+        
+        txtPoblacion = new JTextField(20);
+        gbc.gridx = 1;
+        gbc.gridy = 7;
+        gbc.gridwidth = 2;
+        panelForm.add(txtPoblacion, gbc);
+        
+        // Presentado por
+        JLabel lblPresentadoPor = new JLabel("Presentado por socio N°:");
+        gbc.gridx = 0;
+        gbc.gridy = 8;
+        gbc.gridwidth = 1;
+        panelForm.add(lblPresentadoPor, gbc);
+        
+        txtPresentadoPor = new JTextField(10);
+        gbc.gridx = 1;
+        gbc.gridy = 8;
+        gbc.gridwidth = 2;
+        panelForm.add(txtPresentadoPor, gbc);
+        
+        // Panel de botones
+        JPanel panelBotones = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
+        
+        JButton btnGuardar = new JButton("Guardar");
+        btnGuardar.setPreferredSize(new Dimension(120, 30));
+        btnGuardar.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                guardarSocio();
+            }
+        });
+        panelBotones.add(btnGuardar);
+        
+        JButton btnCancelar = new JButton("Cancelar");
+        btnCancelar.setPreferredSize(new Dimension(120, 30));
+        btnCancelar.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                dispose();
+            }
+        });
+        panelBotones.add(btnCancelar);
+        
+        // Añadir paneles al panel principal
+        panelPrincipal.add(panelTitulo, BorderLayout.NORTH);
+        panelPrincipal.add(panelForm, BorderLayout.CENTER);
+        panelPrincipal.add(panelBotones, BorderLayout.SOUTH);
+        
+        // Añadir panel principal al formulario
+        add(panelPrincipal);
+        
+        // Actualizar número de socio al iniciar
+        actualizarNumeroSocio();
+        
+        // Configurar acceso rápido con tecla Enter
+        getRootPane().setDefaultButton(btnGuardar);
+        
+        // Mostrar formulario
+        setVisible(true);
+    }
+    
+    /**
+     * Actualiza el número de socio en el campo correspondiente según el tipo seleccionado
+     */
+    private void actualizarNumeroSocio() {
+        int ultimoNumero;
+        
+        if (cboTipoSocio.getSelectedIndex() == 0) { // Adulto
+            ultimoNumero = socioDAO.obtenerUltimoNumeroSocioAdulto();
+        } else { // Infantil
+            ultimoNumero = socioDAO.obtenerUltimoNumeroSocioInfantil();
+        }
+        
+        txtNoSocio.setText(String.valueOf(ultimoNumero + 1));
+    }
+    
+    /**
+     * Guarda el socio en la base de datos
+     */
+    private void guardarSocio() {
+        // Validar campos obligatorios
+        if (txtNombres.getText().trim().isEmpty() || txtApellidos.getText().trim().isEmpty()) {
+            JOptionPane.showMessageDialog(this, 
+                "Los campos Nombre(s) y Apellido(s) son obligatorios", 
+                "Error de validación", 
+                JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        
+        try {
+            // Obtener valores de los campos
+            int noSocio = Integer.parseInt(txtNoSocio.getText());
+            String nombres = txtNombres.getText().trim();
+            String apellidos = txtApellidos.getText().trim();
+            String direccion = txtDireccion.getText().trim();
+            String telefono = txtTelefono.getText().trim();            Date fecha;
+            try {
+                SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+                fecha = sdf.parse(txtFecha.getText());
+            } catch (ParseException ex) {
+                fecha = new Date();
+                ex.printStackTrace();
+            }
+            String presentadoPor = txtPresentadoPor.getText().trim();
+            String poblacion = txtPoblacion.getText().trim();
+            
+            boolean exito;
+            
+            // Insertar según el tipo de socio
+            if (cboTipoSocio.getSelectedIndex() == 0) { // Adulto
+                exito = socioDAO.insertarSocioAdulto(
+                    noSocio, nombres, apellidos, direccion, 
+                    telefono, fecha, presentadoPor, poblacion
+                );
+            } else { // Infantil
+                exito = socioDAO.insertarSocioInfantil(
+                    noSocio, fecha, nombres, apellidos, 
+                    direccion, telefono, presentadoPor, poblacion
+                );
+            }
+            
+            // Mostrar mensaje de éxito o error
+            if (exito) {
+                JOptionPane.showMessageDialog(this, 
+                    "Socio guardado con éxito", 
+                    "Operación exitosa", 
+                    JOptionPane.INFORMATION_MESSAGE);
+                
+                // Limpiar formulario y actualizar número de socio
+                limpiarFormulario();
+                actualizarNumeroSocio();
+            } else {
+                JOptionPane.showMessageDialog(this, 
+                    "Error al guardar el socio", 
+                    "Error", 
+                    JOptionPane.ERROR_MESSAGE);
+            }
+            
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, 
+                "Número de socio inválido", 
+                "Error", 
+                JOptionPane.ERROR_MESSAGE);
+        }
+    }
+    
+    /**
+     * Limpia los campos del formulario
+     */
+    private void limpiarFormulario() {
+        txtNombres.setText("");
+        txtApellidos.setText("");
+        txtDireccion.setText("");
+        txtTelefono.setText("");        txtPoblacion.setText("");
+        txtPresentadoPor.setText("");
+        txtFecha.setText(new SimpleDateFormat("dd/MM/yyyy").format(new Date()));
+        txtNombres.requestFocus();
+    }
+    
+    /**
+     * Método principal para pruebas
+     */
+    public static void main(String[] args) {
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                new NuevoSocioForm();
+            }
+        });
+    }
+    
+    /**
+     * Muestra un diálogo de calendario para seleccionar una fecha
+     */
+    private void mostrarCalendario() {
+        // Crear un frame temporal para el diálogo
+        final JDialog dialog = new JDialog(this, "Seleccionar Fecha", true);
+        dialog.setSize(300, 250);
+        dialog.setLocationRelativeTo(this);
+        dialog.setLayout(new BorderLayout());
+        
+        // Crear el panel de calendario
+        JPanel calendarPanel = new JPanel(new BorderLayout());
+        calendarPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+        
+        // Crear los componentes del calendario
+        final JComboBox<Integer> yearCombo = new JComboBox<>();
+        final JComboBox<String> monthCombo = new JComboBox<>(new String[] {
+            "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+            "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+        });
+        
+        // Obtener el año actual y agregar +/- 10 años
+        int currentYear = Calendar.getInstance().get(Calendar.YEAR);
+        for (int i = currentYear - 10; i <= currentYear + 10; i++) {
+            yearCombo.addItem(i);
+        }
+        yearCombo.setSelectedItem(currentYear);
+        
+        // Obtener el mes actual (0-11)
+        int currentMonth = Calendar.getInstance().get(Calendar.MONTH);
+        monthCombo.setSelectedIndex(currentMonth);
+        
+        // Panel para año y mes
+        JPanel topPanel = new JPanel(new GridLayout(1, 2, 5, 0));
+        topPanel.add(monthCombo);
+        topPanel.add(yearCombo);
+        
+        // Panel para los días
+        final JPanel daysPanel = new JPanel(new GridLayout(0, 7));
+        
+        // Etiquetas para los días de la semana
+        String[] dayNames = {"Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"};
+        for (String day : dayNames) {
+            JLabel label = new JLabel(day, JLabel.CENTER);
+            label.setForeground(Color.BLUE);
+            daysPanel.add(label);
+        }
+        
+        // Listener para actualizar los días al cambiar el mes o año
+        ActionListener dateChangeListener = new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                updateDaysPanel(daysPanel, monthCombo.getSelectedIndex(), 
+                        (Integer) yearCombo.getSelectedItem(), dialog);
+            }
+        };
+        
+        monthCombo.addActionListener(dateChangeListener);
+        yearCombo.addActionListener(dateChangeListener);
+        
+        // Panel de botones
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        JButton cancelButton = new JButton("Cancelar");
+        cancelButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                dialog.dispose();
+            }
+        });
+        buttonPanel.add(cancelButton);
+        
+        // Agregar componentes al panel del calendario
+        calendarPanel.add(topPanel, BorderLayout.NORTH);
+        calendarPanel.add(daysPanel, BorderLayout.CENTER);
+        
+        // Agregar componentes al diálogo
+        dialog.add(calendarPanel, BorderLayout.CENTER);
+        dialog.add(buttonPanel, BorderLayout.SOUTH);
+        
+        // Actualizar el panel de días por primera vez
+        updateDaysPanel(daysPanel, monthCombo.getSelectedIndex(), 
+                (Integer) yearCombo.getSelectedItem(), dialog);
+        
+        // Mostrar diálogo
+        dialog.setVisible(true);
+    }
+    
+    /**
+     * Actualiza el panel de días para el mes y año seleccionados
+     */
+    private void updateDaysPanel(JPanel daysPanel, int month, int year, final JDialog dialog) {
+        // Limpiar el panel excepto las etiquetas de los días de la semana (las primeras 7 etiquetas)
+        Component[] components = daysPanel.getComponents();
+        for (int i = 7; i < components.length; i++) {
+            daysPanel.remove(components[i]);
+        }
+        
+        // Obtener el primer día del mes y el número de días en el mes
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(year, month, 1);
+        int firstDayOfWeek = calendar.get(Calendar.DAY_OF_WEEK) - 1; // 0 = Sunday
+        int daysInMonth = calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
+        
+        // Agregar espacios en blanco para los días antes del primer día del mes
+        for (int i = 0; i < firstDayOfWeek; i++) {
+            daysPanel.add(new JLabel(""));
+        }
+        
+        // Agregar botones para cada día del mes
+        for (int day = 1; day <= daysInMonth; day++) {
+            final JButton button = new JButton(String.valueOf(day));
+            button.setMargin(new Insets(1, 1, 1, 1));
+            
+            final int selectedDay = day;
+            button.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    // Formatear la fecha seleccionada (DD/MM/YYYY)
+                    Calendar selectedDate = Calendar.getInstance();
+                    selectedDate.set(Calendar.YEAR, year);
+                    selectedDate.set(Calendar.MONTH, month);
+                    selectedDate.set(Calendar.DAY_OF_MONTH, selectedDay);
+                    
+                    SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+                    txtFecha.setText(sdf.format(selectedDate.getTime()));
+                    
+                    dialog.dispose();
+                }
+            });
+            
+            daysPanel.add(button);
+        }
+        
+        daysPanel.revalidate();
+        daysPanel.repaint();
+    }
+}
