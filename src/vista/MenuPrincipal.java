@@ -23,11 +23,11 @@ public class MenuPrincipal extends JFrame {
     public MenuPrincipal() {
         inicializarComponentes();
     }
-    
-    private void inicializarComponentes() {
+      private void inicializarComponentes() {
         // Configuración básica del formulario
         setTitle("Sistema de Caja - Menú Principal");
-        setSize(900, 600);
+        setExtendedState(JFrame.MAXIMIZED_BOTH); // Iniciar en modo pantalla completa
+        setSize(900, 600); // Tamaño por defecto cuando no esté maximizada
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         
@@ -66,15 +66,16 @@ public class MenuPrincipal extends JFrame {
         menuSocios.setMnemonic(KeyEvent.VK_S);
         
         JMenuItem itemNuevoSocio = new JMenuItem("Nuevo Socio", KeyEvent.VK_N);
-        JMenuItem itemBuscarSocio = new JMenuItem("Buscar Socio", KeyEvent.VK_B);
+        
         JMenuItem itemBuscarSocioID = new JMenuItem("Buscar ID Socio", KeyEvent.VK_I);
-        JMenuItem itemListadoSocios = new JMenuItem("Listado de Socios", KeyEvent.VK_L);        JMenuItem itemModificarSocio = new JMenuItem("Modificar Socio", KeyEvent.VK_M);
+        JMenuItem itemListadoSocios = new JMenuItem("Listado de Socios", KeyEvent.VK_L);        
+        JMenuItem itemModificarSocio = new JMenuItem("Modificar/Buscar Socio", KeyEvent.VK_M);
         // Añadir acción al menú de modificar socio
         itemModificarSocio.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 JPanel panelModificarSocio = new ModificarSocioPanelIntegrado(MenuPrincipal.this);
-                cambiarPanel(panelModificarSocio, "modificarSocio");
+                cambiarPanel(panelModificarSocio, "modificar/BuscarSocio");
             }
         });
           // Añadir acción al menú de nuevo socio
@@ -91,15 +92,29 @@ public class MenuPrincipal extends JFrame {
         menuSocios.add(itemModificarSocio);
         menuSocios.addSeparator();
         menuSocios.add(itemBuscarSocioID);
-        menuSocios.add(itemBuscarSocio);
         menuSocios.addSeparator();
         menuSocios.add(itemListadoSocios);
           // Menú Ver 
         JMenu menuPrestamos = new JMenu("Ver");
         menuPrestamos.setMnemonic(KeyEvent.VK_P);
+          JMenuItem itemNuevoPrestamo = new JMenuItem("Lista Socios Registrados", KeyEvent.VK_N);
+        JMenuItem itemConsultarPrestamo = new JMenuItem("Lista Socios Infantiles", KeyEvent.VK_C);
+        JMenuItem itemTogglePantallaCompleta = new JMenuItem("Alternar Pantalla Completa", KeyEvent.VK_F);
+        itemTogglePantallaCompleta.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0));
         
-        JMenuItem itemNuevoPrestamo = new JMenuItem("Lista Socios Registrados", KeyEvent.VK_N);
-        JMenuItem itemConsultarPrestamo = new JMenuItem("Lista Socios Infantiles", KeyEvent.VK_C);        // Añadir acción al menú de socios registrados
+        // Añadir acción para alternar pantalla completa
+        itemTogglePantallaCompleta.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if ((getExtendedState() & JFrame.MAXIMIZED_BOTH) == JFrame.MAXIMIZED_BOTH) {
+                    setExtendedState(JFrame.NORMAL);
+                } else {
+                    setExtendedState(JFrame.MAXIMIZED_BOTH);
+                }
+            }
+        });
+        
+        // Añadir acción al menú de socios registrados
         itemNuevoPrestamo.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -116,9 +131,10 @@ public class MenuPrincipal extends JFrame {
                 cambiarPanel(panelSociosInfantiles, "sociosInfantiles");
             }
         });
-        
-        menuPrestamos.add(itemNuevoPrestamo);
+          menuPrestamos.add(itemNuevoPrestamo);
         menuPrestamos.add(itemConsultarPrestamo);
+        menuPrestamos.addSeparator();
+        menuPrestamos.add(itemTogglePantallaCompleta);
         
         // Menú Movimientos
         JMenu menuMovimientos = new JMenu("Movimientos");

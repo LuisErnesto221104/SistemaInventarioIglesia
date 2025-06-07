@@ -9,13 +9,13 @@ import java.awt.event.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import vista.ValidationUtils; // Importar la clase de utilidades para la validación visual
 
 /**
  * ModificarSocioPanelIntegrado
  * Panel integrado para modificar datos de un socio existente
  */
 public class ModificarSocioPanelIntegrado extends JPanel {
-    
     private JTextField txtNoSocio;
     private JTextField txtNombres;
     private JTextField txtApellidos;
@@ -26,14 +26,11 @@ public class ModificarSocioPanelIntegrado extends JPanel {
     private JFormattedTextField txtFecha;
     private JButton btnCalendario;
     private JCheckBox chkSocioInfantil;
+    private JCheckBox chkHabilitarEdicion; // Checkbox para habilitar la edición
     private JButton btnBuscar;
     
     private SocioDAO socioDAO;
-    private MenuPrincipal menuPrincipal;
-    
-    // Colores para la validación
-    private final Color COLOR_CAMPO_VALIDO = Color.WHITE;
-    private final Color COLOR_ERROR = new Color(255, 221, 221); // Rosa claro para indicar error
+    private MenuPrincipal menuPrincipal;    // Nota: Los colores para validación ahora están en ValidationUtils
     
     /**
      * Constructor
@@ -52,6 +49,7 @@ public class ModificarSocioPanelIntegrado extends JPanel {
         // Configuración del panel
         setLayout(new BorderLayout(10, 10));
         setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        setPreferredSize(new Dimension(750, 620)); // Aumentar el tamaño del panel para mejor visualización
         
         // Panel de título
         JPanel panelTitulo = new JPanel(new BorderLayout());
@@ -68,66 +66,148 @@ public class ModificarSocioPanelIntegrado extends JPanel {
         lblTitulo.setFont(new Font("Arial", Font.BOLD, 18));
         
         panelTitulo.add(btnVolver, BorderLayout.WEST);
-        panelTitulo.add(lblTitulo, BorderLayout.CENTER);
-        
-        // Panel de búsqueda
+        panelTitulo.add(lblTitulo, BorderLayout.CENTER);        // Panel de búsqueda con mejor diseño
         JPanel panelBusqueda = new JPanel(new GridBagLayout());
         panelBusqueda.setBorder(BorderFactory.createTitledBorder(
                 BorderFactory.createEtchedBorder(), 
-                "Buscar Socio", 
+                "Búsqueda de Socio", 
                 TitledBorder.LEFT, 
                 TitledBorder.TOP, 
-                new Font("Arial", Font.BOLD, 12)));
+                new Font("Arial", Font.BOLD, 14)));
+        panelBusqueda.setBackground(new Color(240, 248, 255)); // Fondo azul claro para destacar
         
         GridBagConstraints gbcBusqueda = new GridBagConstraints();
-        gbcBusqueda.insets = new Insets(5, 5, 5, 5);
+        gbcBusqueda.insets = new Insets(10, 10, 10, 10);
         gbcBusqueda.fill = GridBagConstraints.HORIZONTAL;
         
-        // Tipo de socio (checkbox)
-        chkSocioInfantil = new JCheckBox("Socio Infantil");
+        // Panel para agrupar la selección del tipo de socio
+        JPanel panelTipoSocio = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        panelTipoSocio.setBorder(BorderFactory.createTitledBorder(
+                BorderFactory.createEtchedBorder(), 
+                "Tipo de Socio", 
+                TitledBorder.LEFT, 
+                TitledBorder.TOP));
+        panelTipoSocio.setBackground(new Color(240, 248, 255)); // Mismo fondo
+          // Radio buttons para la selección del tipo de socio
+        JRadioButton rbAdulto = new JRadioButton("Socio Adulto");
+        rbAdulto.setSelected(true); // Por defecto, seleccionado
+        rbAdulto.setBackground(new Color(240, 248, 255)); // Mismo fondo
+        rbAdulto.setFont(new Font("Arial", Font.BOLD, 12));
+        
+        JRadioButton rbInfantil = new JRadioButton("Socio Infantil");
+        rbInfantil.setBackground(new Color(240, 248, 255)); // Mismo fondo
+        rbInfantil.setFont(new Font("Arial", Font.BOLD, 12));
+        
+        // Grupo para que solo se pueda seleccionar uno
+        ButtonGroup groupTipoSocio = new ButtonGroup();
+        groupTipoSocio.add(rbAdulto);
+        groupTipoSocio.add(rbInfantil);
+        
+        // Añadir los radio buttons al panel
+        panelTipoSocio.add(rbAdulto);
+        panelTipoSocio.add(rbInfantil);
+        
+        // Añadir el panel de tipo de socio al panel de búsqueda
         gbcBusqueda.gridx = 0;
         gbcBusqueda.gridy = 0;
-        panelBusqueda.add(chkSocioInfantil, gbcBusqueda);
-        
-        // No. Socio para búsqueda
-        JLabel lblNoSocioBuscar = new JLabel("No. Socio:");
-        gbcBusqueda.gridx = 1;
-        gbcBusqueda.gridy = 0;
-        panelBusqueda.add(lblNoSocioBuscar, gbcBusqueda);
-        
-        txtNoSocio = new JTextField(10);
+        gbcBusqueda.gridwidth = 2;
+        panelBusqueda.add(panelTipoSocio, gbcBusqueda);
+          // Checkbox para habilitar edición (inicialmente invisible)
+        chkHabilitarEdicion = new JCheckBox("Habilitar edición de campos");
+        chkHabilitarEdicion.setEnabled(false);
+        chkHabilitarEdicion.setBackground(new Color(240, 248, 255)); // Mismo fondo
+        chkHabilitarEdicion.setFont(new Font("Arial", Font.BOLD, 12));
+        chkHabilitarEdicion.setForeground(new Color(0, 100, 0)); // Verde oscuro para destacar
+        chkHabilitarEdicion.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 0));
+        chkHabilitarEdicion.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (chkHabilitarEdicion.isSelected()) {
+                    habilitarCamposFormulario();
+                    JOptionPane.showMessageDialog(ModificarSocioPanelIntegrado.this,
+                        "Los campos están habilitados para edición.\nRecuerde que los campos marcados con * son obligatorios.",
+                        "Modo Edición", JOptionPane.INFORMATION_MESSAGE);
+                } else {
+                    deshabilitarCamposFormulario();
+                }
+            }
+        });
         gbcBusqueda.gridx = 2;
         gbcBusqueda.gridy = 0;
-        panelBusqueda.add(txtNoSocio, gbcBusqueda);
+        gbcBusqueda.gridwidth = 1;
+        panelBusqueda.add(chkHabilitarEdicion, gbcBusqueda);
+          // Panel para la búsqueda por número de socio
+        JPanel panelNumSocio = new JPanel(new BorderLayout(10, 0));
+        panelNumSocio.setBorder(BorderFactory.createTitledBorder(
+                BorderFactory.createEtchedBorder(), 
+                "Número de Socio", 
+                TitledBorder.LEFT, 
+                TitledBorder.TOP));
+        panelNumSocio.setBackground(new Color(240, 248, 255)); // Mismo fondo azul claro
+          // No. Socio para búsqueda
+        txtNoSocio = new JTextField(15);
+        txtNoSocio.setFont(new Font("Arial", Font.BOLD, 16)); // Letra más grande y en negrita
+        txtNoSocio.setPreferredSize(new Dimension(0, 35)); // Aumentar altura
+        txtNoSocio.setHorizontalAlignment(JTextField.CENTER); // Texto centrado
+        txtNoSocio.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(100, 149, 237), 2), // Cornflower blue, borde más grueso
+            BorderFactory.createEmptyBorder(5, 10, 5, 10) // Más padding interno
+        ));
+        // Agregar KeyListener para responder a Enter
+        txtNoSocio.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                    btnBuscar.doClick(); // Simular clic en el botón buscar
+                }
+            }
+        });
+        panelNumSocio.add(txtNoSocio, BorderLayout.CENTER);
         
         // Botón de búsqueda
-        btnBuscar = new JButton("Buscar");
+        btnBuscar = new JButton("Buscar Socio");
+        btnBuscar.setIcon(UIManager.getIcon("FileView.directoryIcon")); // Icono de búsqueda
+        btnBuscar.setFont(new Font("Arial", Font.BOLD, 12));
+        btnBuscar.setBackground(new Color(70, 130, 180)); // Steel Blue
+        btnBuscar.setForeground(Color.BLACK);
+        btnBuscar.setPreferredSize(new Dimension(130, 35));
+        btnBuscar.setBorder(BorderFactory.createRaisedBevelBorder());
+        btnBuscar.setFocusPainted(false);
         btnBuscar.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                // Actualizar el estado del checkbox tipo socio basado en los radio buttons
+                chkSocioInfantil = new JCheckBox(); // Checkbox oculto para mantener la lógica existente
+                chkSocioInfantil.setSelected(rbInfantil.isSelected());
                 buscarSocio();
             }
         });
-        gbcBusqueda.gridx = 3;
-        gbcBusqueda.gridy = 0;
-        panelBusqueda.add(btnBuscar, gbcBusqueda);
+        panelNumSocio.add(btnBuscar, BorderLayout.EAST);
         
-        // Panel de formulario para datos del socio
+        // Añadir el panel de número de socio al panel de búsqueda
+        gbcBusqueda.gridx = 0;
+        gbcBusqueda.gridy = 1;
+        gbcBusqueda.gridwidth = 3;
+        panelBusqueda.add(panelNumSocio, gbcBusqueda);
+          // Panel de formulario para datos del socio
         JPanel panelForm = new JPanel(new GridBagLayout());
         panelForm.setBorder(BorderFactory.createTitledBorder(
                 BorderFactory.createEtchedBorder(), 
                 "Datos del Socio", 
                 TitledBorder.LEFT, 
                 TitledBorder.TOP, 
-                new Font("Arial", Font.BOLD, 12)));
-        
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(5, 5, 5, 5);
+                new Font("Arial", Font.BOLD, 14)));
+        panelForm.setBackground(new Color(245, 245, 250)); // Fondo gris muy claro con toque de azul
+          GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(10, 10, 10, 10); // Aumentar espacio entre elementos
         gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.weightx = 1.0; // Distribución proporcional del espacio horizontal
         
         // Fecha
         JLabel lblFecha = new JLabel("Fecha*:");
         lblFecha.setForeground(Color.RED);
+        lblFecha.setFont(new Font("Arial", Font.BOLD, 12));
         gbc.gridx = 0;
         gbc.gridy = 0;
         gbc.gridwidth = 1;
@@ -138,13 +218,15 @@ public class ModificarSocioPanelIntegrado extends JPanel {
             MaskFormatter formatoFecha = new MaskFormatter("##/##/####");
             formatoFecha.setPlaceholderCharacter('_');
             txtFecha = new JFormattedTextField(formatoFecha);
+            txtFecha.setFont(new Font("Arial", Font.PLAIN, 14));
+            txtFecha.setPreferredSize(new Dimension(0, 30)); // Altura fija para el campo
         } catch (ParseException e) {
             txtFecha = new JFormattedTextField();
             e.printStackTrace();
         }
         
         btnCalendario = new JButton("...");
-        btnCalendario.setPreferredSize(new Dimension(30, 25));
+        btnCalendario.setPreferredSize(new Dimension(30, 30));
         btnCalendario.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -163,14 +245,20 @@ public class ModificarSocioPanelIntegrado extends JPanel {
         // Nombres (campo obligatorio)
         JLabel lblNombres = new JLabel("Nombre(s)*:");
         lblNombres.setForeground(Color.RED);
+        lblNombres.setFont(new Font("Arial", Font.BOLD, 12));
         gbc.gridx = 0;
         gbc.gridy = 1;
         gbc.gridwidth = 1;
         panelForm.add(lblNombres, gbc);
         
-        txtNombres = new JTextField(20);
+        txtNombres = new JTextField(30); // Aumentar número de columnas
+        txtNombres.setFont(new Font("Arial", Font.PLAIN, 14));
+        txtNombres.setPreferredSize(new Dimension(0, 30)); // Altura fija para el campo
         // Agregar borde para indicar estado de validación
-        txtNombres.setBorder(BorderFactory.createLineBorder(Color.GRAY));
+        txtNombres.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(Color.GRAY),
+            BorderFactory.createEmptyBorder(2, 5, 2, 5) // Padding interno para mejor visualización
+        ));
         // Agregar validación mientras se escribe
         txtNombres.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
             @Override
@@ -194,13 +282,19 @@ public class ModificarSocioPanelIntegrado extends JPanel {
         // Apellidos (campo obligatorio)
         JLabel lblApellidos = new JLabel("Apellido(s)*:");
         lblApellidos.setForeground(Color.RED);
+        lblApellidos.setFont(new Font("Arial", Font.BOLD, 12));
         gbc.gridx = 0;
         gbc.gridy = 2;
         gbc.gridwidth = 1;
         panelForm.add(lblApellidos, gbc);
         
-        txtApellidos = new JTextField(20);
-        txtApellidos.setBorder(BorderFactory.createLineBorder(Color.GRAY));
+        txtApellidos = new JTextField(30); // Aumentar número de columnas
+        txtApellidos.setFont(new Font("Arial", Font.PLAIN, 14));
+        txtApellidos.setPreferredSize(new Dimension(0, 30)); // Altura fija para el campo
+        txtApellidos.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(Color.GRAY),
+            BorderFactory.createEmptyBorder(2, 5, 2, 5) // Padding interno para mejor visualización
+        ));
         // Agregar validación mientras se escribe
         txtApellidos.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
             @Override
@@ -223,12 +317,19 @@ public class ModificarSocioPanelIntegrado extends JPanel {
         
         // Dirección
         JLabel lblDireccion = new JLabel("Dirección:");
+        lblDireccion.setFont(new Font("Arial", Font.BOLD, 12));
         gbc.gridx = 0;
         gbc.gridy = 3;
         gbc.gridwidth = 1;
         panelForm.add(lblDireccion, gbc);
         
-        txtDireccion = new JTextField(20);
+        txtDireccion = new JTextField(30); // Aumentar número de columnas
+        txtDireccion.setFont(new Font("Arial", Font.PLAIN, 14));
+        txtDireccion.setPreferredSize(new Dimension(0, 30)); // Altura fija para el campo
+        txtDireccion.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(Color.GRAY),
+            BorderFactory.createEmptyBorder(2, 5, 2, 5) // Padding interno para mejor visualización
+        ));
         gbc.gridx = 1;
         gbc.gridy = 3;
         gbc.gridwidth = 2;
@@ -236,6 +337,7 @@ public class ModificarSocioPanelIntegrado extends JPanel {
         
         // Teléfono
         JLabel lblTelefono = new JLabel("Teléfono:");
+        lblTelefono.setFont(new Font("Arial", Font.BOLD, 12));
         gbc.gridx = 0;
         gbc.gridy = 4;
         gbc.gridwidth = 1;
@@ -243,7 +345,14 @@ public class ModificarSocioPanelIntegrado extends JPanel {
         
         try {
             MaskFormatter formatoTelefono = new MaskFormatter("##########");
+            formatoTelefono.setPlaceholderCharacter('_');
             txtTelefono = new JFormattedTextField(formatoTelefono);
+            txtTelefono.setFont(new Font("Arial", Font.PLAIN, 14));
+            txtTelefono.setPreferredSize(new Dimension(0, 30)); // Altura fija para el campo
+            txtTelefono.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(Color.GRAY),
+                BorderFactory.createEmptyBorder(2, 5, 2, 5) // Padding interno para mejor visualización
+            ));
         } catch (ParseException e) {
             txtTelefono = new JFormattedTextField();
             e.printStackTrace();
@@ -256,12 +365,19 @@ public class ModificarSocioPanelIntegrado extends JPanel {
         
         // Población
         JLabel lblPoblacion = new JLabel("Población:");
+        lblPoblacion.setFont(new Font("Arial", Font.BOLD, 12));
         gbc.gridx = 0;
         gbc.gridy = 5;
         gbc.gridwidth = 1;
         panelForm.add(lblPoblacion, gbc);
         
-        txtPoblacion = new JTextField(20);
+        txtPoblacion = new JTextField(30); // Aumentar número de columnas
+        txtPoblacion.setFont(new Font("Arial", Font.PLAIN, 14));
+        txtPoblacion.setPreferredSize(new Dimension(0, 30)); // Altura fija para el campo
+        txtPoblacion.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(Color.GRAY),
+            BorderFactory.createEmptyBorder(2, 5, 2, 5) // Padding interno para mejor visualización
+        ));
         gbc.gridx = 1;
         gbc.gridy = 5;
         gbc.gridwidth = 2;
@@ -269,22 +385,36 @@ public class ModificarSocioPanelIntegrado extends JPanel {
         
         // Presentado por
         JLabel lblPresentadoPor = new JLabel("Presentado por el socio N°:");
+        lblPresentadoPor.setFont(new Font("Arial", Font.BOLD, 12));
         gbc.gridx = 0;
         gbc.gridy = 6;
         gbc.gridwidth = 1;
         panelForm.add(lblPresentadoPor, gbc);
         
-        txtPresentadoPor = new JTextField(20);
+        txtPresentadoPor = new JTextField(30); // Aumentar número de columnas
+        txtPresentadoPor.setFont(new Font("Arial", Font.PLAIN, 14));
+        txtPresentadoPor.setPreferredSize(new Dimension(0, 30)); // Altura fija para el campo
+        txtPresentadoPor.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(Color.GRAY),
+            BorderFactory.createEmptyBorder(2, 5, 2, 5) // Padding interno para mejor visualización
+        ));
         gbc.gridx = 1;
         gbc.gridy = 6;
         gbc.gridwidth = 2;
         panelForm.add(txtPresentadoPor, gbc);
-        
-        // Panel de botones
-        JPanel panelBotones = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
+          // Panel de botones
+        JPanel panelBotones = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 15));
+        panelBotones.setBackground(new Color(240, 248, 255)); // Fondo azul claro
+        panelBotones.setBorder(BorderFactory.createEmptyBorder(5, 0, 5, 0));
         
         JButton btnGuardar = new JButton("Guardar Cambios");
-        btnGuardar.setPreferredSize(new Dimension(150, 30));
+        btnGuardar.setFont(new Font("Arial", Font.BOLD, 14));
+        btnGuardar.setBackground(new Color(0, 128, 0)); // Verde
+        btnGuardar.setForeground(Color.BLACK);
+        btnGuardar.setPreferredSize(new Dimension(160, 35));
+        btnGuardar.setFocusPainted(false);
+        btnGuardar.setBorder(BorderFactory.createRaisedBevelBorder());
+        btnGuardar.setIcon(UIManager.getIcon("FileView.floppyDriveIcon")); // Icono de guardar
         btnGuardar.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -292,9 +422,14 @@ public class ModificarSocioPanelIntegrado extends JPanel {
             }
         });
         panelBotones.add(btnGuardar);
-        
-        JButton btnLimpiar = new JButton("Limpiar");
-        btnLimpiar.setPreferredSize(new Dimension(120, 30));
+          JButton btnLimpiar = new JButton("Limpiar Campos");
+        btnLimpiar.setFont(new Font("Arial", Font.BOLD, 12));
+        btnLimpiar.setBackground(new Color(70, 130, 180)); // Steel Blue
+        btnLimpiar.setForeground(Color.BLACK);
+        btnLimpiar.setPreferredSize(new Dimension(140, 35));
+        btnLimpiar.setFocusPainted(false);
+        btnLimpiar.setBorder(BorderFactory.createRaisedBevelBorder());
+        btnLimpiar.setIcon(UIManager.getIcon("FileChooser.upFolderIcon")); // Icono para limpiar
         btnLimpiar.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -304,7 +439,13 @@ public class ModificarSocioPanelIntegrado extends JPanel {
         panelBotones.add(btnLimpiar);
         
         JButton btnCancelar = new JButton("Cancelar");
-        btnCancelar.setPreferredSize(new Dimension(120, 30));
+        btnCancelar.setFont(new Font("Arial", Font.BOLD, 12));
+        btnCancelar.setBackground(new Color(178, 34, 34)); // Firebrick red
+        btnCancelar.setForeground(Color.BLACK);
+        btnCancelar.setPreferredSize(new Dimension(120, 35));
+        btnCancelar.setFocusPainted(false);
+        btnCancelar.setBorder(BorderFactory.createRaisedBevelBorder());
+        btnCancelar.setIcon(UIManager.getIcon("OptionPane.errorIcon")); // Icono para cancelar
         btnCancelar.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -312,12 +453,21 @@ public class ModificarSocioPanelIntegrado extends JPanel {
             }
         });
         panelBotones.add(btnCancelar);
-        
-        // Crear panel de información para campos obligatorios
+          // Crear panel de información para campos obligatorios
         JPanel panelInfo = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        JLabel lblCamposObligatorios = new JLabel("* Los campos marcados con asterisco son obligatorios");
-        lblCamposObligatorios.setFont(new Font("Arial", Font.ITALIC, 11));
-        lblCamposObligatorios.setForeground(Color.RED);
+        panelInfo.setBackground(new Color(255, 250, 240)); // Fondo amarillento muy suave
+        panelInfo.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createMatteBorder(1, 0, 0, 0, new Color(211, 211, 211)), // Línea superior gris
+            BorderFactory.createEmptyBorder(5, 10, 5, 10)
+        ));
+        
+        // Icono de información
+        JLabel iconoInfo = new JLabel(UIManager.getIcon("OptionPane.informationIcon"));
+        panelInfo.add(iconoInfo);
+        
+        JLabel lblCamposObligatorios = new JLabel("* Los campos marcados con asterisco son obligatorios para guardar");
+        lblCamposObligatorios.setFont(new Font("Arial", Font.BOLD, 12));
+        lblCamposObligatorios.setForeground(new Color(178, 34, 34)); // Rojo oscuro
         panelInfo.add(lblCamposObligatorios);
         
         // Panel que combina los formularios
@@ -344,9 +494,10 @@ public class ModificarSocioPanelIntegrado extends JPanel {
     }
     
     /**
-     * Deshabilita los campos del formulario hasta que se busque un socio
+     * Deshabilita los campos del formulario para evitar edición accidental
      */
     private void deshabilitarCamposFormulario() {
+        // Deshabilitar campos
         txtFecha.setEnabled(false);
         btnCalendario.setEnabled(false);
         txtNombres.setEnabled(false);
@@ -355,6 +506,15 @@ public class ModificarSocioPanelIntegrado extends JPanel {
         txtTelefono.setEnabled(false);
         txtPoblacion.setEnabled(false);
         txtPresentadoPor.setEnabled(false);
+        
+        // Aplicar estilo visual consistente a todos los campos deshabilitados usando ValidationUtils
+        ValidationUtils.aplicarEstiloCampoDeshabilitado(txtFecha);
+        ValidationUtils.aplicarEstiloCampoDeshabilitado(txtNombres);
+        ValidationUtils.aplicarEstiloCampoDeshabilitado(txtApellidos);
+        ValidationUtils.aplicarEstiloCampoDeshabilitado(txtDireccion);
+        ValidationUtils.aplicarEstiloCampoDeshabilitado(txtTelefono);
+        ValidationUtils.aplicarEstiloCampoDeshabilitado(txtPoblacion);
+        ValidationUtils.aplicarEstiloCampoDeshabilitado(txtPresentadoPor);
     }
     
     /**
@@ -369,11 +529,22 @@ public class ModificarSocioPanelIntegrado extends JPanel {
         txtTelefono.setEnabled(true);
         txtPoblacion.setEnabled(true);
         txtPresentadoPor.setEnabled(true);
+          // Restaurar colores
+        txtFecha.setBackground(ValidationUtils.COLOR_CAMPO_VALIDO);
+        txtNombres.setBackground(ValidationUtils.COLOR_CAMPO_VALIDO);
+        txtApellidos.setBackground(ValidationUtils.COLOR_CAMPO_VALIDO);
+        txtDireccion.setBackground(ValidationUtils.COLOR_CAMPO_VALIDO);
+        txtTelefono.setBackground(ValidationUtils.COLOR_CAMPO_VALIDO);
+        txtPoblacion.setBackground(ValidationUtils.COLOR_CAMPO_VALIDO);
+        txtPresentadoPor.setBackground(ValidationUtils.COLOR_CAMPO_VALIDO);
+        
+        // Destacar campos obligatorios
+        aplicarEstiloCamposObligatorios();
     }
-    
-    /**
+      /**
      * Busca un socio por su número y tipo
-     */    private void buscarSocio() {
+     */
+    private void buscarSocio() {
         try {
             int noSocio = Integer.parseInt(txtNoSocio.getText().trim());
             boolean esInfantil = chkSocioInfantil.isSelected();
@@ -388,11 +559,20 @@ public class ModificarSocioPanelIntegrado extends JPanel {
             
             // Verificar si se encontró el socio
             if (socio != null) {
-                // Habilitar campos para edición
-                habilitarCamposFormulario();
+                // Habilitar el checkbox de edición (pero los campos aún están deshabilitados)
+                chkHabilitarEdicion.setEnabled(true);
+                
+                // Muestra mensaje indicando que se puede marcar el checkbox para editar
+                JOptionPane.showMessageDialog(this,
+                    "Se encontró el socio correctamente.\n\n" +
+                    "Para modificar sus datos, marque la casilla\n" +
+                    "'Habilitar edición de campos' que se encuentra arriba.",
+                    "Socio encontrado - Instrucciones", 
+                    JOptionPane.INFORMATION_MESSAGE);
                 
                 // Mostrar datos del socio encontrado
-                if (esInfantil) {                    // Formatear y mostrar la fecha
+                if (esInfantil) {
+                    // Formatear y mostrar la fecha
                     Date fecha = (Date) socio.get("Fecha");
                     SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
                     if (fecha != null) {
@@ -401,19 +581,15 @@ public class ModificarSocioPanelIntegrado extends JPanel {
                         txtFecha.setText("");
                     }
                     
-                    // Mostrar el resto de campos con protección contra valores nulos
-                    txtNombres.setText(socio.get("Nombres") != null ? (String) socio.get("Nombres") : "");
-                    txtApellidos.setText(socio.get("Apellidos") != null ? (String) socio.get("Apellidos") : "");
-                    txtDireccion.setText(socio.get("Direccion") != null ? (String) socio.get("Direccion") : "");
-                    txtTelefono.setText(socio.get("Telefono") != null ? (String) socio.get("Telefono") : "");
-                    txtPoblacion.setText(socio.get("Poblacion") != null ? (String) socio.get("Poblacion") : "");
-                    txtPresentadoPor.setText(socio.get("PresentadoPor") != null ? (String) socio.get("PresentadoPor") : "");
-                    
-                    JOptionPane.showMessageDialog(this, 
-                        "Socio Infantil #" + noSocio + " encontrado.", 
-                        "Socio encontrado", 
-                        JOptionPane.INFORMATION_MESSAGE);
-                } else {                    // Formatear y mostrar la fecha de registro
+                    // Mostrar el resto de campos con formato mejorado usando ValidationUtils
+                    mostrarDatoEnCampo(txtNombres, socio.get("Nombres"));
+                    mostrarDatoEnCampo(txtApellidos, socio.get("Apellidos"));
+                    mostrarDatoEnCampo(txtDireccion, socio.get("Direccion"));
+                    mostrarDatoEnCampo(txtTelefono, socio.get("Telefono"));
+                    mostrarDatoEnCampo(txtPoblacion, socio.get("Poblacion"));
+                    mostrarDatoEnCampo(txtPresentadoPor, socio.get("PresentadoPor"));
+                } else {
+                    // Formatear y mostrar la fecha de registro
                     Date fechaRegistro = (Date) socio.get("FechaRegistro");
                     SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
                     if (fechaRegistro != null) {
@@ -422,23 +598,17 @@ public class ModificarSocioPanelIntegrado extends JPanel {
                         txtFecha.setText("");
                     }
                     
-                    // Mostrar el resto de campos con protección contra valores nulos
-                    txtNombres.setText(socio.get("Nombres") != null ? (String) socio.get("Nombres") : "");
-                    txtApellidos.setText(socio.get("Apellidos") != null ? (String) socio.get("Apellidos") : "");
-                    txtDireccion.setText(socio.get("Direccion") != null ? (String) socio.get("Direccion") : "");
-                    txtTelefono.setText(socio.get("Telefono") != null ? (String) socio.get("Telefono") : "");
-                    txtPoblacion.setText(socio.get("Poblacion") != null ? (String) socio.get("Poblacion") : "");
-                    txtPresentadoPor.setText(socio.get("PresentadoPor") != null ? (String) socio.get("PresentadoPor") : "");
-                    
-                    JOptionPane.showMessageDialog(this, 
-                        "Socio Adulto #" + noSocio + " encontrado.", 
-                        "Socio encontrado", 
-                        JOptionPane.INFORMATION_MESSAGE);
+                    // Mostrar el resto de campos usando ValidationUtils
+                    mostrarDatoEnCampo(txtNombres, socio.get("Nombres"));
+                    mostrarDatoEnCampo(txtApellidos, socio.get("Apellidos"));
+                    mostrarDatoEnCampo(txtDireccion, socio.get("Direccion"));
+                    mostrarDatoEnCampo(txtTelefono, socio.get("Telefono"));
+                    mostrarDatoEnCampo(txtPoblacion, socio.get("Poblacion"));
+                    mostrarDatoEnCampo(txtPresentadoPor, socio.get("PresentadoPor"));
                 }
                 
                 // Aplicar estilos de validación a los campos
                 aplicarEstiloCamposObligatorios();
-                
             } else {
                 // Si no se encuentra el socio, mostrar mensaje y deshabilitar campos
                 JOptionPane.showMessageDialog(this, 
@@ -446,9 +616,10 @@ public class ModificarSocioPanelIntegrado extends JPanel {
                     "Socio no encontrado", 
                     JOptionPane.WARNING_MESSAGE);
                 deshabilitarCamposFormulario();
+                chkHabilitarEdicion.setEnabled(false);
+                chkHabilitarEdicion.setSelected(false);
                 limpiarFormulario();
             }
-            
         } catch (NumberFormatException e) {
             JOptionPane.showMessageDialog(this, 
                 "Por favor, ingrese un número de socio válido.", 
@@ -653,45 +824,21 @@ public class ModificarSocioPanelIntegrado extends JPanel {
         dialogo.setLocationRelativeTo(btnCalendario);
         dialogo.setVisible(true);
     }
-    
-    /**
+      /**
      * Valida un campo obligatorio y cambia su estilo visual en consecuencia
      * @param campo El campo de texto a validar
      * @return true si es válido, false si está vacío
-     */
-    private boolean validarCampoObligatorio(JTextField campo) {
-        boolean esValido = !campo.getText().trim().isEmpty();
-        if (esValido) {
-            campo.setBackground(COLOR_CAMPO_VALIDO);
-            campo.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(255, 200, 200)), 
-                BorderFactory.createEmptyBorder(3, 3, 3, 3)
-            ));
-            campo.setToolTipText("Campo obligatorio");
-        } else {
-            campo.setBackground(COLOR_ERROR);
-            campo.setBorder(BorderFactory.createLineBorder(Color.RED, 2));
-            campo.setToolTipText("Este campo es obligatorio y no puede estar vacío");
-        }
-        return esValido;
+     */    private boolean validarCampoObligatorio(JTextField campo) {
+        // Utilizar la clase de utilidades para validar el campo
+        return ValidationUtils.validarCampoObligatorio(campo);
     }
-    
-    /**
+      /**
      * Aplica el estilo visual a los campos obligatorios sin marcarlos como error
-     */
-    private void aplicarEstiloCamposObligatorios() {
-        // Aplicar un borde sutil que indique que es un campo obligatorio
-        txtNombres.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(new Color(255, 200, 200)), 
-            BorderFactory.createEmptyBorder(3, 3, 3, 3)
-        ));
-        txtNombres.setToolTipText("Campo obligatorio");
-        
-        txtApellidos.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(new Color(255, 200, 200)),
-            BorderFactory.createEmptyBorder(3, 3, 3, 3)
-        ));
-        txtApellidos.setToolTipText("Campo obligatorio");
+     */    private void aplicarEstiloCamposObligatorios() {
+        // Usar la clase ValidationUtils para aplicar estilos a los campos obligatorios
+        ValidationUtils.aplicarEstiloCampoObligatorio(txtNombres, "Debe ingresar el/los nombre(s) del socio");
+        ValidationUtils.aplicarEstiloCampoObligatorio(txtApellidos, "Debe ingresar el/los apellido(s) del socio");
+        ValidationUtils.aplicarEstiloCampoObligatorio(txtFecha, "Debe seleccionar una fecha válida");
     }
     
     /**
@@ -705,12 +852,20 @@ public class ModificarSocioPanelIntegrado extends JPanel {
         txtTelefono.setText("");
         txtPoblacion.setText("");
         txtPresentadoPor.setText("");
-        
-        // Resetear el estilo visual de los campos obligatorios
-        txtNombres.setBackground(COLOR_CAMPO_VALIDO);
-        txtApellidos.setBackground(COLOR_CAMPO_VALIDO);
+          // Resetear el estilo visual de los campos obligatorios
+        txtNombres.setBackground(ValidationUtils.COLOR_CAMPO_VALIDO);
+        txtApellidos.setBackground(ValidationUtils.COLOR_CAMPO_VALIDO);
         
         // Aplicar el estilo de campos obligatorios sin marcarlos como error
         aplicarEstiloCamposObligatorios();
+    }
+      /**
+     * Método auxiliar para mostrar datos en un campo de texto con mejor formato
+     * y efectos visuales para mejor experiencia de usuario
+     * @param campo El campo de texto donde mostrar el dato
+     * @param valor El valor a mostrar (puede ser null)
+     */    private void mostrarDatoEnCampo(JTextField campo, Object valor) {
+        // Utilizar el método de la clase de utilidades
+        ValidationUtils.mostrarDatoEnCampo(campo, valor);
     }
 }
