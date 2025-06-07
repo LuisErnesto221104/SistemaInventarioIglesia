@@ -68,8 +68,15 @@ public class MenuPrincipal extends JFrame {
         JMenuItem itemNuevoSocio = new JMenuItem("Nuevo Socio", KeyEvent.VK_N);
         JMenuItem itemBuscarSocio = new JMenuItem("Buscar Socio", KeyEvent.VK_B);
         JMenuItem itemBuscarSocioID = new JMenuItem("Buscar ID Socio", KeyEvent.VK_I);
-        JMenuItem itemListadoSocios = new JMenuItem("Listado de Socios", KeyEvent.VK_L);
-        JMenuItem itemModificarSocio = new JMenuItem("Modificar Socio", KeyEvent.VK_M);
+        JMenuItem itemListadoSocios = new JMenuItem("Listado de Socios", KeyEvent.VK_L);        JMenuItem itemModificarSocio = new JMenuItem("Modificar Socio", KeyEvent.VK_M);
+        // Añadir acción al menú de modificar socio
+        itemModificarSocio.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JPanel panelModificarSocio = new ModificarSocioPanelIntegrado(MenuPrincipal.this);
+                cambiarPanel(panelModificarSocio, "modificarSocio");
+            }
+        });
           // Añadir acción al menú de nuevo socio
         itemNuevoSocio.addActionListener(new ActionListener() {
             @Override

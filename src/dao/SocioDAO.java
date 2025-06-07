@@ -242,6 +242,182 @@ public class SocioDAO {
     }
     
     /**
+     * Busca un socio adulto por su número de socio
+     * @param noSocio Número de socio
+     * @return Mapa con los datos del socio o null si no se encuentra
+     */
+    public Map<String, Object> buscarSocioAdultoPorID(int noSocio) {
+        Map<String, Object> socio = null;
+        
+        try {
+            // Consulta SQL para obtener los datos del socio
+            String consulta = "SELECT NoSocio, Nombres, Apellidos, Direccion, Telefono, FechaRegistro, PresentadoPor, Poblacion " +
+                              "FROM Socios WHERE NoSocio = ?";
+            
+            PreparedStatement statement = conexion.getConexion().prepareStatement(consulta);
+            statement.setInt(1, noSocio);
+            
+            ResultSet resultado = statement.executeQuery();
+            
+            // Si hay resultados, crear el mapa de datos del socio
+            if (resultado.next()) {
+                socio = new HashMap<>();
+                socio.put("NoSocio", resultado.getInt("NoSocio"));
+                socio.put("Nombres", resultado.getString("Nombres"));
+                socio.put("Apellidos", resultado.getString("Apellidos"));
+                socio.put("Direccion", resultado.getString("Direccion"));
+                socio.put("Telefono", resultado.getString("Telefono"));
+                socio.put("FechaRegistro", resultado.getDate("FechaRegistro"));
+                socio.put("PresentadoPor", resultado.getString("PresentadoPor"));
+                socio.put("Poblacion", resultado.getString("Poblacion"));
+            }
+            
+            resultado.close();
+            statement.close();
+            
+        } catch (SQLException e) {
+            System.err.println("Error al buscar socio adulto: " + e.getMessage());
+            e.printStackTrace();
+        }
+        
+        return socio;
+    }
+    
+    /**
+     * Busca un socio infantil por su número de socio
+     * @param noSocio Número de socio
+     * @return Mapa con los datos del socio o null si no se encuentra
+     */
+    public Map<String, Object> buscarSocioInfantilPorID(int noSocio) {
+        Map<String, Object> socio = null;
+        
+        try {
+            // Consulta SQL para obtener los datos del socio infantil
+            String consulta = "SELECT NoSocio, Fecha, Nombres, Apellidos, Direccion, Telefono, PresentadoPor, Poblacion " +
+                              "FROM SociosInfa WHERE NoSocio = ?";
+            
+            PreparedStatement statement = conexion.getConexion().prepareStatement(consulta);
+            statement.setInt(1, noSocio);
+            
+            ResultSet resultado = statement.executeQuery();
+            
+            // Si hay resultados, crear el mapa de datos del socio infantil
+            if (resultado.next()) {
+                socio = new HashMap<>();
+                socio.put("NoSocio", resultado.getInt("NoSocio"));
+                socio.put("Fecha", resultado.getDate("Fecha"));
+                socio.put("Nombres", resultado.getString("Nombres"));
+                socio.put("Apellidos", resultado.getString("Apellidos"));
+                socio.put("Direccion", resultado.getString("Direccion"));
+                socio.put("Telefono", resultado.getString("Telefono"));
+                socio.put("PresentadoPor", resultado.getString("PresentadoPor"));
+                socio.put("Poblacion", resultado.getString("Poblacion"));
+            }
+            
+            resultado.close();
+            statement.close();
+            
+        } catch (SQLException e) {
+            System.err.println("Error al buscar socio infantil: " + e.getMessage());
+            e.printStackTrace();
+        }
+        
+        return socio;
+    }
+    
+    /**
+     * Actualiza los datos de un socio adulto
+     * @param noSocio Número de socio
+     * @param nombres Nombres del socio
+     * @param apellidos Apellidos del socio
+     * @param direccion Dirección del socio
+     * @param telefono Teléfono del socio
+     * @param fechaRegistro Fecha de registro
+     * @param presentadoPor Persona que presentó al socio
+     * @param poblacion Población del socio
+     * @return true si se actualizó correctamente, false en caso contrario
+     */
+    public boolean actualizarSocioAdulto(int noSocio, String nombres, String apellidos, String direccion, 
+            String telefono, java.util.Date fechaRegistro, String presentadoPor, String poblacion) {
+        
+        boolean exito = false;
+        
+        try {
+            String consulta = "UPDATE Socios SET Nombres = ?, Apellidos = ?, Direccion = ?, " +
+                    "Telefono = ?, FechaRegistro = ?, PresentadoPor = ?, Poblacion = ? " +
+                    "WHERE NoSocio = ?";
+            
+            PreparedStatement statement = conexion.getConexion().prepareStatement(consulta);
+            statement.setString(1, nombres);
+            statement.setString(2, apellidos);
+            statement.setString(3, direccion);
+            statement.setString(4, telefono);
+            statement.setDate(5, new java.sql.Date(fechaRegistro.getTime()));
+            statement.setString(6, presentadoPor);
+            statement.setString(7, poblacion);
+            statement.setInt(8, noSocio);
+            
+            int filasActualizadas = statement.executeUpdate();
+            
+            exito = (filasActualizadas > 0);
+            
+            statement.close();
+            
+        } catch (SQLException e) {
+            System.err.println("Error al actualizar socio adulto: " + e.getMessage());
+            e.printStackTrace();
+        }
+        
+        return exito;
+    }
+    
+    /**
+     * Actualiza los datos de un socio infantil
+     * @param noSocio Número de socio
+     * @param fecha Fecha de registro
+     * @param nombres Nombres del socio
+     * @param apellidos Apellidos del socio
+     * @param direccion Dirección del socio
+     * @param telefono Teléfono del socio
+     * @param presentadoPor Persona que presentó al socio
+     * @param poblacion Población del socio
+     * @return true si se actualizó correctamente, false en caso contrario
+     */
+    public boolean actualizarSocioInfantil(int noSocio, java.util.Date fecha, String nombres, String apellidos, 
+            String direccion, String telefono, String presentadoPor, String poblacion) {
+        
+        boolean exito = false;
+        
+        try {
+            String consulta = "UPDATE SociosInfa SET Fecha = ?, Nombres = ?, Apellidos = ?, " +
+                    "Direccion = ?, Telefono = ?, PresentadoPor = ?, Poblacion = ? " +
+                    "WHERE NoSocio = ?";
+            
+            PreparedStatement statement = conexion.getConexion().prepareStatement(consulta);
+            statement.setDate(1, new java.sql.Date(fecha.getTime()));
+            statement.setString(2, nombres);
+            statement.setString(3, apellidos);
+            statement.setString(4, direccion);
+            statement.setString(5, telefono);
+            statement.setString(6, presentadoPor);
+            statement.setString(7, poblacion);
+            statement.setInt(8, noSocio);
+            
+            int filasActualizadas = statement.executeUpdate();
+            
+            exito = (filasActualizadas > 0);
+            
+            statement.close();
+            
+        } catch (SQLException e) {
+            System.err.println("Error al actualizar socio infantil: " + e.getMessage());
+            e.printStackTrace();
+        }
+        
+        return exito;
+    }
+    
+    /**
      * Cierra la conexión a la base de datos
      */
     public void cerrarConexion() {
