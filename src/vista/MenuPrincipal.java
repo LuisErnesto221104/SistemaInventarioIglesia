@@ -66,10 +66,18 @@ public class MenuPrincipal extends JFrame {
         menuSocios.setMnemonic(KeyEvent.VK_S);
         
         JMenuItem itemNuevoSocio = new JMenuItem("Nuevo Socio", KeyEvent.VK_N);
-        
-        JMenuItem itemBuscarSocioID = new JMenuItem("Buscar ID Socio", KeyEvent.VK_I);
-        JMenuItem itemListadoSocios = new JMenuItem("Listado de Socios", KeyEvent.VK_L);        
+        JMenuItem itemBuscarSocioID = new JMenuItem("Buscar ID Socio", KeyEvent.VK_I);   
         JMenuItem itemModificarSocio = new JMenuItem("Modificar/Buscar Socio", KeyEvent.VK_M);
+        JMenuItem itemEliminarSocio = new JMenuItem("Eliminar Socio", KeyEvent.VK_E);
+        
+        // Añadir acción al menú de buscar ID socio
+        itemBuscarSocioID.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JPanel panelBuscarID = new BuscarSocioIDPanel(MenuPrincipal.this);
+                cambiarPanel(panelBuscarID, "buscarIDSocio");
+            }
+        });
         // Añadir acción al menú de modificar socio
         itemModificarSocio.addActionListener(new ActionListener() {
             @Override
@@ -93,10 +101,11 @@ public class MenuPrincipal extends JFrame {
         menuSocios.addSeparator();
         menuSocios.add(itemBuscarSocioID);
         menuSocios.addSeparator();
-        menuSocios.add(itemListadoSocios);
+        menuSocios.add(itemEliminarSocio);
+
           // Menú Ver 
-        JMenu menuPrestamos = new JMenu("Ver");
-        menuPrestamos.setMnemonic(KeyEvent.VK_P);
+        JMenu menuVer = new JMenu("Ver");
+        menuVer.setMnemonic(KeyEvent.VK_P);
           JMenuItem itemNuevoPrestamo = new JMenuItem("Lista Socios Registrados", KeyEvent.VK_N);
         JMenuItem itemConsultarPrestamo = new JMenuItem("Lista Socios Infantiles", KeyEvent.VK_C);
         JMenuItem itemTogglePantallaCompleta = new JMenuItem("Alternar Pantalla Completa", KeyEvent.VK_F);
@@ -131,10 +140,11 @@ public class MenuPrincipal extends JFrame {
                 cambiarPanel(panelSociosInfantiles, "sociosInfantiles");
             }
         });
-          menuPrestamos.add(itemNuevoPrestamo);
-        menuPrestamos.add(itemConsultarPrestamo);
-        menuPrestamos.addSeparator();
-        menuPrestamos.add(itemTogglePantallaCompleta);
+        
+        menuVer.add(itemNuevoPrestamo);
+        menuVer.add(itemConsultarPrestamo);
+        menuVer.addSeparator();
+        menuVer.add(itemTogglePantallaCompleta);
         
         // Menú Movimientos
         JMenu menuMovimientos = new JMenu("Movimientos");
@@ -213,8 +223,8 @@ public class MenuPrincipal extends JFrame {
 
         // Añadir menús a la barra
         menuBar.add(menuArchivo);
+        menuBar.add(menuVer);
         menuBar.add(menuSocios);
-        menuBar.add(menuPrestamos);
         menuBar.add(menuMovimientos);
         menuBar.add(menuReportes);
         menuBar.add(menuPremioAhorro);

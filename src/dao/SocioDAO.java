@@ -326,6 +326,122 @@ public class SocioDAO {
     }
     
     /**
+     * Busca socios adultos por nombre y/o apellido
+     * @param nombre Nombre del socio (puede ser vacío)
+     * @param apellido Apellido del socio (puede ser vacío)
+     * @return Lista de socios encontrados
+     */
+    public List<Map<String, Object>> buscarSociosAdultosPorNombre(String nombre, String apellido) {
+        List<Map<String, Object>> socios = new ArrayList<>();
+        StringBuilder consulta = new StringBuilder("SELECT NoSocio, Nombres, Apellidos, Direccion, Telefono, FechaRegistro, PresentadoPor, Poblacion FROM Socios WHERE 1=1");
+        
+        if (nombre != null && !nombre.isEmpty()) {
+            consulta.append(" AND Nombres LIKE ?");
+        }
+        
+        if (apellido != null && !apellido.isEmpty()) {
+            consulta.append(" AND Apellidos LIKE ?");
+        }
+        
+        consulta.append(" ORDER BY NoSocio");
+        
+        try {
+            PreparedStatement statement = conexion.getConexion().prepareStatement(consulta.toString());
+            int index = 1;
+            
+            if (nombre != null && !nombre.isEmpty()) {
+                statement.setString(index++, "%" + nombre + "%");
+            }
+            
+            if (apellido != null && !apellido.isEmpty()) {
+                statement.setString(index++, "%" + apellido + "%");
+            }
+            
+            ResultSet resultado = statement.executeQuery();
+            
+            while (resultado.next()) {
+                Map<String, Object> socio = new HashMap<>();
+                socio.put("NoSocio", resultado.getInt("NoSocio"));
+                socio.put("Nombres", resultado.getString("Nombres"));
+                socio.put("Apellidos", resultado.getString("Apellidos"));
+                socio.put("Direccion", resultado.getString("Direccion"));
+                socio.put("Telefono", resultado.getString("Telefono"));
+                socio.put("FechaRegistro", resultado.getDate("FechaRegistro"));
+                socio.put("PresentadoPor", resultado.getString("PresentadoPor"));
+                socio.put("Poblacion", resultado.getString("Poblacion"));
+                
+                socios.add(socio);
+            }
+            
+            resultado.close();
+            statement.close();
+        } catch (SQLException e) {
+            System.err.println("Error al buscar socios adultos: " + e.getMessage());
+            e.printStackTrace();
+        }
+        
+        return socios;
+    }
+    
+    /**
+     * Busca socios infantiles por nombre y/o apellido
+     * @param nombre Nombre del socio infantil (puede ser vacío)
+     * @param apellido Apellido del socio infantil (puede ser vacío)
+     * @return Lista de socios infantiles encontrados
+     */
+    public List<Map<String, Object>> buscarSociosInfantilesPorNombre(String nombre, String apellido) {
+        List<Map<String, Object>> socios = new ArrayList<>();
+        StringBuilder consulta = new StringBuilder("SELECT NoSocio, Fecha, Nombres, Apellidos, Direccion, Telefono, PresentadoPor, Poblacion FROM SociosInfa WHERE 1=1");
+        
+        if (nombre != null && !nombre.isEmpty()) {
+            consulta.append(" AND Nombres LIKE ?");
+        }
+        
+        if (apellido != null && !apellido.isEmpty()) {
+            consulta.append(" AND Apellidos LIKE ?");
+        }
+        
+        consulta.append(" ORDER BY NoSocio");
+        
+        try {
+            PreparedStatement statement = conexion.getConexion().prepareStatement(consulta.toString());
+            int index = 1;
+            
+            if (nombre != null && !nombre.isEmpty()) {
+                statement.setString(index++, "%" + nombre + "%");
+            }
+            
+            if (apellido != null && !apellido.isEmpty()) {
+                statement.setString(index++, "%" + apellido + "%");
+            }
+            
+            ResultSet resultado = statement.executeQuery();
+            
+            while (resultado.next()) {
+                Map<String, Object> socio = new HashMap<>();
+                socio.put("NoSocio", resultado.getInt("NoSocio"));
+                socio.put("Fecha", resultado.getDate("Fecha"));
+                socio.put("Nombres", resultado.getString("Nombres"));
+                socio.put("Apellidos", resultado.getString("Apellidos"));
+                socio.put("Direccion", resultado.getString("Direccion"));
+                socio.put("Telefono", resultado.getString("Telefono"));
+                socio.put("PresentadoPor", resultado.getString("PresentadoPor"));
+                socio.put("Poblacion", resultado.getString("Poblacion"));
+                
+                socios.add(socio);
+            }
+            
+            resultado.close();
+            statement.close();
+        } catch (SQLException e) {
+            System.err.println("Error al buscar socios infantiles: " + e.getMessage());
+            e.printStackTrace();
+        }
+        
+        return socios;
+    }
+    
+    /**
      * Actualiza los datos de un socio adulto
      * @param noSocio Número de socio
      * @param nombres Nombres del socio

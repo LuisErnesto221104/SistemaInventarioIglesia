@@ -9,7 +9,6 @@ import java.awt.event.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import vista.ValidationUtils; // Importar la clase de utilidades para la validación visual
 
 /**
  * ModificarSocioPanelIntegrado
