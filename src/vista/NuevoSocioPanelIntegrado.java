@@ -28,20 +28,71 @@ public class NuevoSocioPanelIntegrado extends JPanel {
     private JComboBox<String> cboTipoSocio;
     private SocioDAO socioDAO;
     private MenuPrincipal menuPrincipal;
-    
-    /**
+      /**
      * Constructor
      * @param menuPrincipal Referencia al menú principal para poder volver
-     */
-    public NuevoSocioPanelIntegrado(MenuPrincipal menuPrincipal) {
+     */    public NuevoSocioPanelIntegrado(MenuPrincipal menuPrincipal) {
         this.menuPrincipal = menuPrincipal;
         socioDAO = new SocioDAO();
         inicializarComponentes();
+        
+        // Configurar y mostrar indicadores de campos obligatorios
+        // Usando invokeLater para asegurar que el UI esté completamente construido
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                // Aplicar el estilo de campos obligatorios sin marcarlos como error al inicio
+                aplicarEstiloCamposObligatorios();
+            }
+        });
+    }
+    
+    /**
+     * Aplica el estilo visual a los campos obligatorios sin marcarlos como error
+     */
+    private void aplicarEstiloCamposObligatorios() {
+        // Aplicar un borde sutil que indique que es un campo obligatorio
+        txtNombres.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(255, 200, 200)), 
+            BorderFactory.createEmptyBorder(3, 3, 3, 3)
+        ));
+        txtNombres.setToolTipText("Campo obligatorio");
+        
+        txtApellidos.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(255, 200, 200)),
+            BorderFactory.createEmptyBorder(3, 3, 3, 3)
+        ));
+        txtApellidos.setToolTipText("Campo obligatorio");
     }
     
     /**
      * Inicializa los componentes del panel
-     */
+     */    // Colores para la validación
+    private final Color COLOR_CAMPO_VALIDO = Color.WHITE;
+    private final Color COLOR_ERROR = new Color(255, 221, 221); // Rosa claro para indicar error
+    
+    /**
+     * Valida un campo obligatorio y cambia su estilo visual en consecuencia
+     * @param campo El campo de texto a validar
+     * @return true si es válido, false si está vacío
+     */    private boolean validarCampoObligatorio(JTextField campo) {
+        boolean esValido = !campo.getText().trim().isEmpty();
+        if (esValido) {
+            campo.setBackground(COLOR_CAMPO_VALIDO);
+            // Mantener un borde sutil que indica que el campo es obligatorio incluso cuando es válido
+            campo.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(255, 200, 200)), 
+                BorderFactory.createEmptyBorder(3, 3, 3, 3)
+            ));
+            campo.setToolTipText("Campo obligatorio");
+        } else {
+            campo.setBackground(COLOR_ERROR);
+            campo.setBorder(BorderFactory.createLineBorder(Color.RED, 2));
+            campo.setToolTipText("Este campo es obligatorio y no puede estar vacío");
+        }
+        return esValido;
+    }
+    
     private void inicializarComponentes() {
         // Configuración del panel
         setLayout(new BorderLayout(10, 10));
@@ -140,26 +191,61 @@ public class NuevoSocioPanelIntegrado extends JPanel {
         gbc.gridy = 2;
         gbc.gridwidth = 2;
         panelForm.add(panelFecha, gbc);
-        
-        // Nombres
-        JLabel lblNombres = new JLabel("Nombre(s):");
+          // Nombres (campo obligatorio)
+        JLabel lblNombres = new JLabel("Nombre(s)*:");
+        lblNombres.setForeground(Color.RED);
         gbc.gridx = 0;
         gbc.gridy = 3;
         gbc.gridwidth = 1;
         panelForm.add(lblNombres, gbc);
         
         txtNombres = new JTextField(20);
+        // Agregar borde para indicar estado de validación
+        txtNombres.setBorder(BorderFactory.createLineBorder(Color.GRAY));
+        // Agregar validación mientras se escribe
+        txtNombres.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+            @Override
+            public void insertUpdate(javax.swing.event.DocumentEvent e) {
+                validarCampoObligatorio(txtNombres);
+            }
+            @Override
+            public void removeUpdate(javax.swing.event.DocumentEvent e) {
+                validarCampoObligatorio(txtNombres);
+            }
+            @Override
+            public void changedUpdate(javax.swing.event.DocumentEvent e) {
+                validarCampoObligatorio(txtNombres);
+            }
+        });
         gbc.gridx = 1;
         gbc.gridy = 3;
         gbc.gridwidth = 2;
         panelForm.add(txtNombres, gbc);
-        
-        // Apellidos
-        JLabel lblApellidos = new JLabel("Apellido(s):");
+          // Apellidos (campo obligatorio)
+        JLabel lblApellidos = new JLabel("Apellido(s)*:");
+        lblApellidos.setForeground(Color.RED);
         gbc.gridx = 0;
         gbc.gridy = 4;
         gbc.gridwidth = 1;
         panelForm.add(lblApellidos, gbc);
+        
+        txtApellidos = new JTextField(20);
+        txtApellidos.setBorder(BorderFactory.createLineBorder(Color.GRAY));
+        // Agregar validación mientras se escribe
+        txtApellidos.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+            @Override
+            public void insertUpdate(javax.swing.event.DocumentEvent e) {
+                validarCampoObligatorio(txtApellidos);
+            }
+            @Override
+            public void removeUpdate(javax.swing.event.DocumentEvent e) {
+                validarCampoObligatorio(txtApellidos);
+            }
+            @Override
+            public void changedUpdate(javax.swing.event.DocumentEvent e) {
+                validarCampoObligatorio(txtApellidos);
+            }
+        });
         
         txtApellidos = new JTextField(20);
         gbc.gridx = 1;
@@ -259,10 +345,21 @@ public class NuevoSocioPanelIntegrado extends JPanel {
             }
         });
         panelBotones.add(btnCancelar);
+          // Crear panel de información para campos obligatorios
+        JPanel panelInfo = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        JLabel lblCamposObligatorios = new JLabel("* Los campos marcados con asterisco son obligatorios");
+        lblCamposObligatorios.setFont(new Font("Arial", Font.ITALIC, 11));
+        lblCamposObligatorios.setForeground(Color.RED);
+        panelInfo.add(lblCamposObligatorios);
+        
+        // Panel que combina el formulario y la información
+        JPanel panelCentral = new JPanel(new BorderLayout());
+        panelCentral.add(panelForm, BorderLayout.CENTER);
+        panelCentral.add(panelInfo, BorderLayout.SOUTH);
         
         // Añadir paneles al panel principal
         add(panelTitulo, BorderLayout.NORTH);
-        add(panelForm, BorderLayout.CENTER);
+        add(panelCentral, BorderLayout.CENTER);
         add(panelBotones, BorderLayout.SOUTH);
         
         // Actualizar número de socio al iniciar
@@ -423,14 +520,41 @@ public class NuevoSocioPanelIntegrado extends JPanel {
     
     /**
      * Guarda el socio en la base de datos
-     */
-    private void guardarSocio() {
-        // Validar campos obligatorios
-        if (txtNombres.getText().trim().isEmpty() || txtApellidos.getText().trim().isEmpty()) {
+     */    private void guardarSocio() {
+        // Validar campos obligatorios usando nuestra función de validación
+        boolean nombreValido = !txtNombres.getText().trim().isEmpty();
+        boolean apellidoValido = !txtApellidos.getText().trim().isEmpty();
+        
+        // Aplicar estilos visuales basados en la validación
+        if (!nombreValido) {
+            txtNombres.setBorder(BorderFactory.createLineBorder(Color.RED, 2));
+            txtNombres.setBackground(COLOR_ERROR);
+            txtNombres.setToolTipText("Este campo es obligatorio");
+        }
+        
+        if (!apellidoValido) {
+            txtApellidos.setBorder(BorderFactory.createLineBorder(Color.RED, 2));
+            txtApellidos.setBackground(COLOR_ERROR);
+            txtApellidos.setToolTipText("Este campo es obligatorio");
+        }
+        
+        if (!nombreValido || !apellidoValido) {
+            // Construir mensaje de error específico
+            StringBuilder mensajeError = new StringBuilder("Los siguientes campos son obligatorios:\n");
+            if (!nombreValido) mensajeError.append("- Nombre(s)\n");
+            if (!apellidoValido) mensajeError.append("- Apellido(s)");
+            
             JOptionPane.showMessageDialog(this, 
-                "Los campos Nombre(s) y Apellido(s) son obligatorios", 
+                mensajeError.toString(), 
                 "Error de validación", 
                 JOptionPane.WARNING_MESSAGE);
+                
+            // Enfocar el primer campo con error
+            if (!nombreValido) {
+                txtNombres.requestFocus();
+            } else if (!apellidoValido) {
+                txtApellidos.requestFocus();
+            }
             return;
         }
         
@@ -495,7 +619,7 @@ public class NuevoSocioPanelIntegrado extends JPanel {
     /**
      * Limpia los campos del formulario
      */
-    private void limpiarFormulario() {
+      private void limpiarFormulario() {
         txtNombres.setText("");
         txtApellidos.setText("");
         txtDireccion.setText("");
@@ -503,6 +627,14 @@ public class NuevoSocioPanelIntegrado extends JPanel {
         txtPoblacion.setText("");
         txtPresentadoPor.setText("");
         txtFecha.setText(new SimpleDateFormat("dd/MM/yyyy").format(new Date()));
+        
+        // Resetear el estilo visual de los campos obligatorios
+        txtNombres.setBackground(COLOR_CAMPO_VALIDO);
+        txtApellidos.setBackground(COLOR_CAMPO_VALIDO);
+        
+        // Aplicar el estilo de campos obligatorios sin marcarlos como error
+        aplicarEstiloCamposObligatorios();
+        
         txtNombres.requestFocus();
     }
 }

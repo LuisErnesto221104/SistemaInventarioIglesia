@@ -3,7 +3,6 @@ package dao;
 import conexion.Conexion;
 import java.sql.*;
 import java.util.*;
-import java.util.Date;
 
 /**
  * SocioDAO
