@@ -78,6 +78,16 @@ public class MenuPrincipal extends JFrame {
                 cambiarPanel(panelBuscarID, "buscarIDSocio");
             }
         });
+        
+        // Añadir acción al menú de eliminar socio
+        itemEliminarSocio.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JPanel panelEliminarSocio = new EliminarSocioPanel(MenuPrincipal.this);
+                cambiarPanel(panelEliminarSocio, "eliminarSocio");
+            }
+        });
+        
         // Añadir acción al menú de modificar socio
         itemModificarSocio.addActionListener(new ActionListener() {
             @Override
