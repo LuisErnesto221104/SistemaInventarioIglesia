@@ -176,12 +176,12 @@ public class MenuPrincipal extends JFrame {
         menuMovimientos.addSeparator();
         menuMovimientos.add(itemOtros);
 
-        
-        // Menú Reportes
+          // Menú Reportes
         JMenu menuReportes = new JMenu("Reportes");
         menuReportes.setMnemonic(KeyEvent.VK_R);
           JMenuItem itemReporteDiarioAdultos = new JMenuItem("Reporte Diarios de Adultos", KeyEvent.VK_I);
         JMenuItem itemReporteDiarioInfantes = new JMenuItem("Reporte Diario de Infantes", KeyEvent.VK_E);
+        JMenuItem itemReporteDiarioGeneral = new JMenuItem("Reporte Diario General", KeyEvent.VK_D);
         JMenuItem itemReporteMensualAdultos = new JMenuItem("Reporte Mensual Adultos", KeyEvent.VK_P);
         JMenuItem itemReporteMensualInfantes = new JMenuItem("Reporte Mensual de Infantes", KeyEvent.VK_M);
         JMenuItem itemReporteMensual = new JMenuItem("Reporte Mensual General", KeyEvent.VK_G);
@@ -224,6 +224,14 @@ public class MenuPrincipal extends JFrame {
                 cambiarPanel(panelReporteMensualInfantes, "reporteMensualInfantes");
             }
         });
+          // Añadir acción al menú de reporte diario general
+        itemReporteDiarioGeneral.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JPanel panelReporteDiarioGeneral = new ReporteDiarioGeneralPanel(MenuPrincipal.this);
+                cambiarPanel(panelReporteDiarioGeneral, "reporteDiarioGeneral");
+            }
+        });
         
         // Añadir acción al menú de reporte mensual general
         itemReporteMensual.addActionListener(new ActionListener() {
@@ -236,6 +244,7 @@ public class MenuPrincipal extends JFrame {
         
         menuReportes.add(itemReporteDiarioAdultos);
         menuReportes.add(itemReporteDiarioInfantes);
+        menuReportes.add(itemReporteDiarioGeneral);
         menuReportes.addSeparator();
         menuReportes.add(itemReporteMensualAdultos);
         menuReportes.add(itemReporteMensualInfantes);
