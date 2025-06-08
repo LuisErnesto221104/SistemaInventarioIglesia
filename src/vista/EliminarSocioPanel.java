@@ -10,6 +10,8 @@ import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
+import java.util.List;
+import java.util.ArrayList;
 
 /**
  * EliminarSocioPanel
@@ -528,9 +530,8 @@ public class EliminarSocioPanel extends JPanel {
         add(panelPrincipal, BorderLayout.CENTER);
         add(panelAdvertencia, BorderLayout.SOUTH);
     }
-    
-    /**
-     * Busca un socio por número
+      /**
+     * Busca un socio por número, verificando tanto tablas de socios como la tabla MovimientosSocio
      */
     private void buscarSocio() {
         if (txtNoSocio.getText().trim().isEmpty()) {
@@ -545,6 +546,35 @@ public class EliminarSocioPanel extends JPanel {
         try {
             int noSocio = Integer.parseInt(txtNoSocio.getText().trim());
             esInfantil = chkSocioInfantil.isSelected();
+              // Definir exactamente los valores de tipo de socio según la base de datos
+            String tipoActual = esInfantil ? "INFANTIL" : "ADULTO";
+            String tipoAlternativo = esInfantil ? "ADULTO" : "INFANTIL";
+            
+            System.out.println("Buscando socio #" + noSocio + " con tipo: " + tipoActual);
+            
+            // Verificar primero si existe en la tabla de movimientos con el tipo seleccionado
+            boolean existeEnMovimientos = socioDAO.existeEnMovimientos(noSocio, tipoActual);
+            if (!existeEnMovimientos) {
+                // Verificar si existe en la otra categoría
+                boolean existeEnOtraCategoria = socioDAO.existeEnMovimientos(noSocio, tipoAlternativo);
+                if (existeEnOtraCategoria) {
+                    System.out.println("Socio #" + noSocio + " encontrado como " + tipoAlternativo + " en MovimientosSocio");
+                    
+                    int respuesta = JOptionPane.showConfirmDialog(this,
+                        "No se encontró el socio como " + tipoActual + " en los movimientos, pero existe como " + 
+                        tipoAlternativo + ".\n\n¿Desea cambiar el tipo de socio?",
+                        "Socio encontrado en otra categoría",
+                        JOptionPane.YES_NO_OPTION,
+                        JOptionPane.QUESTION_MESSAGE);
+                    
+                    if (respuesta == JOptionPane.YES_OPTION) {
+                        // Cambiar el tipo de socio
+                        esInfantil = !esInfantil;
+                        chkSocioInfantil.setSelected(esInfantil);
+                        System.out.println("Tipo de socio cambiado a: " + (esInfantil ? "INFANTIL" : "ADULTO"));
+                    }
+                }
+            }
             
             // Limpiar campos y deshabilitar botón de eliminar
             limpiarCampos();
@@ -558,17 +588,43 @@ public class EliminarSocioPanel extends JPanel {
                 return;
             }
             
-            // Buscar el socio
+            // Buscar el socio según el tipo seleccionado
             socioActual = esInfantil ? 
                 socioDAO.buscarSocioInfantilPorID(noSocio) : 
                 socioDAO.buscarSocioAdultoPorID(noSocio);
             
+            // Si no se encuentra en la tabla correspondiente al tipo seleccionado, verificar en la otra tabla
             if (socioActual == null) {
-                JOptionPane.showMessageDialog(this,
-                    "No se encontró ningún socio " + (esInfantil ? "infantil" : "adulto") + " con el número " + noSocio,
-                    "Socio no encontrado",
-                    JOptionPane.INFORMATION_MESSAGE);
-                return;
+                // Intentar en la otra tabla
+                Map<String, Object> socioAlternativo = esInfantil ? 
+                    socioDAO.buscarSocioAdultoPorID(noSocio) : 
+                    socioDAO.buscarSocioInfantilPorID(noSocio);
+                
+                if (socioAlternativo != null) {
+                    // Se encontró en la otra tabla, sugerir el cambio
+                    int respuesta = JOptionPane.showConfirmDialog(this,
+                        "No se encontró el socio como " + (esInfantil ? "infantil" : "adulto") + ", pero existe como " + 
+                        (esInfantil ? "adulto" : "infantil") + ".\n\n¿Desea cambiar el tipo de socio?",
+                        "Socio encontrado en otra categoría",
+                        JOptionPane.YES_NO_OPTION,
+                        JOptionPane.QUESTION_MESSAGE);
+                    
+                    if (respuesta == JOptionPane.YES_OPTION) {
+                        // Cambiar el tipo de socio y volver a buscar
+                        esInfantil = !esInfantil;
+                        chkSocioInfantil.setSelected(esInfantil);
+                        socioActual = socioAlternativo;
+                    } else {
+                        return; // Usuario decidió no cambiar el tipo
+                    }
+                } else {
+                    // No se encontró en ninguna tabla
+                    JOptionPane.showMessageDialog(this,
+                        "No se encontró ningún socio con el número " + noSocio,
+                        "Socio no encontrado",
+                        JOptionPane.INFORMATION_MESSAGE);
+                    return;
+                }
             }
             
             // Mostrar los datos del socio
@@ -625,50 +681,120 @@ public class EliminarSocioPanel extends JPanel {
     
     /**
      * Muestra datos financieros del socio
-     */
-    private void mostrarDatosFinancieros(Map<String, Object> datos) {
+     */    private void mostrarDatosFinancieros(Map<String, Object> datos) {
         if (datos == null) return;
         
         DecimalFormat formato = new DecimalFormat("#,##0.00");
+        SimpleDateFormat formatoFecha = new SimpleDateFormat("dd/MM/yyyy");
         
         // Limpiar tabla
         modeloTablaSaldos.setRowCount(0);
         
-        // Aporte
-        double aporIngresos = ((Number)datos.getOrDefault("AporIngresos", 0.0)).doubleValue();
-        double aporEgresos = ((Number)datos.getOrDefault("AporEgresos", 0.0)).doubleValue();
-        double aporSaldo = ((Number)datos.getOrDefault("AporSaldo", 0.0)).doubleValue();
+        // Variable para almacenar el total a retirar (declarada aquí para ser accesible en todo el método)
+        double totalRetiro = 0.0;
         
-        // Préstamos
-        double presIngresos = ((Number)datos.getOrDefault("PresIngresos", 0.0)).doubleValue();
-        double presEgresos = ((Number)datos.getOrDefault("PresEgresos", 0.0)).doubleValue();
-        double presSaldo = ((Number)datos.getOrDefault("PresSaldo", 0.0)).doubleValue();
+        // Verificar si hay movimientos en el mapa de datos
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> movimientos = (List<Map<String, Object>>) datos.getOrDefault("Movimientos", new ArrayList<>());
         
-        // Ahorro
-        double ahoIngresos = ((Number)datos.getOrDefault("AhoIngresos", 0.0)).doubleValue();
-        double ahoEgresos = ((Number)datos.getOrDefault("AhoEgresos", 0.0)).doubleValue();
-        double ahoSaldo = ((Number)datos.getOrDefault("AhoSaldo", 0.0)).doubleValue();
-        
-        // Intereses
-        double intereses = ((Number)datos.getOrDefault("Intereses", 0.0)).doubleValue();
-        
-        // Aportación social
-        double aportacionSocial = ((Number)datos.getOrDefault("AportacionSocial", 0.0)).doubleValue();
-        
-        // Llenar la tabla
-        modeloTablaSaldos.addRow(new Object[]{"Aporte", formato.format(aporIngresos), formato.format(aporEgresos), formato.format(aporSaldo)});
-        modeloTablaSaldos.addRow(new Object[]{"Préstamo", formato.format(presIngresos), formato.format(presEgresos), formato.format(presSaldo)});
-        modeloTablaSaldos.addRow(new Object[]{"Ahorro", formato.format(ahoIngresos), formato.format(ahoEgresos), formato.format(ahoSaldo)});
-        modeloTablaSaldos.addRow(new Object[]{"Intereses", "", "", formato.format(intereses)});
-        
-        // Mostrar totales en los campos
-        txtAporteSocial.setText(formato.format(aportacionSocial));
-        txtSaldoAhorro.setText(formato.format(ahoSaldo));
-        txtSaldoPrestamo.setText(formato.format(presSaldo));
-        
-        // Calcular total a retirar (aporte social + saldo ahorro - saldo préstamo)
-        double totalRetiro = aportacionSocial + ahoSaldo - presSaldo;
-        txtTotalRetiro.setText(formato.format(totalRetiro));
+        if (movimientos.isEmpty()) {
+            // Si no hay movimientos, usar solo los datos del más reciente o por defecto
+            // Aporte
+            double aporIngresos = ((Number)datos.getOrDefault("AporIngresos", 0.0)).doubleValue();
+            double aporEgresos = ((Number)datos.getOrDefault("AporEgresos", 0.0)).doubleValue();
+            double aporSaldo = ((Number)datos.getOrDefault("AporSaldo", 0.0)).doubleValue();
+            
+            // Préstamos
+            double presIngresos = ((Number)datos.getOrDefault("PresIngresos", 0.0)).doubleValue();
+            double presEgresos = ((Number)datos.getOrDefault("PresEgresos", 0.0)).doubleValue();
+            double presSaldo = ((Number)datos.getOrDefault("PresSaldo", 0.0)).doubleValue();
+            
+            // Ahorro
+            double ahoIngresos = ((Number)datos.getOrDefault("AhoIngresos", 0.0)).doubleValue();
+            double ahoEgresos = ((Number)datos.getOrDefault("AhoEgresos", 0.0)).doubleValue();
+            double ahoSaldo = ((Number)datos.getOrDefault("AhoSaldo", 0.0)).doubleValue();
+            
+            // Intereses
+            double intereses = ((Number)datos.getOrDefault("Intereses", 0.0)).doubleValue();
+            
+            // Aportación social
+            double aportacionSocial = ((Number)datos.getOrDefault("AportacionSocial", 0.0)).doubleValue();
+            
+            // Llenar la tabla con los datos por defecto
+            modeloTablaSaldos.addRow(new Object[]{"Aporte", formato.format(aporIngresos), formato.format(aporEgresos), formato.format(aporSaldo)});
+            modeloTablaSaldos.addRow(new Object[]{"Préstamo", formato.format(presIngresos), formato.format(presEgresos), formato.format(presSaldo)});
+            modeloTablaSaldos.addRow(new Object[]{"Ahorro", formato.format(ahoIngresos), formato.format(ahoEgresos), formato.format(ahoSaldo)});
+            modeloTablaSaldos.addRow(new Object[]{"Intereses", "", "", formato.format(intereses)});
+              // Mostrar los campos con los valores por defecto
+            txtAporteSocial.setText(formato.format(aportacionSocial));
+            txtSaldoAhorro.setText(formato.format(ahoSaldo));
+            txtSaldoPrestamo.setText(formato.format(presSaldo));
+            
+            // Calcular total a retirar (AhorroSaldo + AporteSocial - PrestamoSaldo)
+            totalRetiro = ahoSaldo + aportacionSocial - presSaldo;
+            txtTotalRetiro.setText(formato.format(totalRetiro));
+            
+            // Cambiar el color del total según sea positivo o negativo
+            if (totalRetiro < 0) {
+                txtTotalRetiro.setForeground(new Color(255, 0, 0)); // Rojo
+            } else {
+                txtTotalRetiro.setForeground(new Color(0, 128, 0)); // Verde
+            }
+            
+        } else {
+            // Si hay movimientos, mostrarlos todos con fecha y saldos
+            
+            // Para los campos de texto usamos el registro más reciente (el primero en la lista)
+            Map<String, Object> registroReciente = movimientos.get(0);
+            double aportacionSocial = ((Number)registroReciente.getOrDefault("AporSaldo", 0.0)).doubleValue();
+            double ahoSaldo = ((Number)registroReciente.getOrDefault("AhoSaldo", 0.0)).doubleValue();
+            double presSaldo = ((Number)registroReciente.getOrDefault("PresSaldo", 0.0)).doubleValue();
+            
+            // Para la tabla, mostramos todos los registros con su fecha
+            for (Map<String, Object> movimiento : movimientos) {
+                String fechaStr = "Sin fecha";
+                if (movimiento.get("Fecha") != null) {
+                    fechaStr = formatoFecha.format(movimiento.get("Fecha"));
+                }
+                  double aporSaldoMov = ((Number)movimiento.getOrDefault("AporSaldo", 0.0)).doubleValue();
+                double presSaldoMov = ((Number)movimiento.getOrDefault("PresSaldo", 0.0)).doubleValue();
+                double ahoSaldoMov = ((Number)movimiento.getOrDefault("AhoSaldo", 0.0)).doubleValue();
+                double interesesMov = ((Number)movimiento.getOrDefault("Intereses", 0.0)).doubleValue();
+                
+                // Calcular el saldo total (AhorroSaldo + AporteSocial - PrestamoSaldo)
+                double saldoTotal = ahoSaldoMov + aporSaldoMov - presSaldoMov;
+                  // Agregar filas a la tabla con la fecha y los saldos
+                modeloTablaSaldos.addRow(new Object[]{
+                    "Fecha: " + fechaStr,
+                    "Total: " + formato.format(saldoTotal),
+                    "(Ahorro + Aporte - Préstamo)",
+                    saldoTotal < 0 ? "❌" : "✅"
+                });
+                
+                modeloTablaSaldos.addRow(new Object[]{"Aporte", "", "", formato.format(aporSaldoMov)});
+                modeloTablaSaldos.addRow(new Object[]{"Préstamo", "", "", formato.format(presSaldoMov)});
+                modeloTablaSaldos.addRow(new Object[]{"Ahorro", "", "", formato.format(ahoSaldoMov)});
+                modeloTablaSaldos.addRow(new Object[]{"Intereses", "", "", formato.format(interesesMov)});
+                
+                // Agregar una fila en blanco para separar los movimientos
+                modeloTablaSaldos.addRow(new Object[]{"", "", "", ""});
+            }
+              // Mostrar los campos con los valores del registro más reciente
+            txtAporteSocial.setText(formato.format(aportacionSocial));
+            txtSaldoAhorro.setText(formato.format(ahoSaldo));
+            txtSaldoPrestamo.setText(formato.format(presSaldo));
+            
+            // Calcular total a retirar (AhorroSaldo + AporteSocial - PrestamoSaldo)
+            totalRetiro = ahoSaldo + aportacionSocial - presSaldo;
+            txtTotalRetiro.setText(formato.format(totalRetiro));
+            
+            // Cambiar el color del total según sea positivo o negativo
+            if (totalRetiro < 0) {
+                txtTotalRetiro.setForeground(new Color(255, 0, 0)); // Rojo
+            } else {
+                txtTotalRetiro.setForeground(new Color(0, 128, 0)); // Verde
+            }
+        }
         
         // Cambiar color según si el total es positivo o negativo
         if (totalRetiro < 0) {
@@ -708,9 +834,10 @@ public class EliminarSocioPanel extends JPanel {
         int noSocio = (int) socioActual.get("NoSocio");
         String nombre = (String) socioActual.get("Nombres");
         String apellido = (String) socioActual.get("Apellidos");
+        String tipoSocio = esInfantil ? "INFANTIL" : "ADULTO";
         
         int confirmacion = JOptionPane.showConfirmDialog(this,
-            "¿Está seguro que desea eliminar al socio " + noSocio + ": " + nombre + " " + apellido + "?\n\n" +
+            "¿Está seguro que desea eliminar al socio " + tipoSocio + " #" + noSocio + ": " + nombre + " " + apellido + "?\n\n" +
             "Esta acción no se puede deshacer y toda la información del socio será trasladada a la tabla de socios cancelados.",
             "Confirmar eliminación",
             JOptionPane.YES_NO_OPTION,
@@ -730,6 +857,24 @@ public class EliminarSocioPanel extends JPanel {
                 // Ignorar errores de parseo, usar 0
             }
             
+            System.out.println("Ejecutando eliminación de socio " + tipoSocio + " #" + noSocio + 
+                ": " + nombre + " " + apellido + " con monto de retiro: " + totalRetiro);
+            
+            // Verificar que existe en MovimientosSocio del tipo correcto
+            boolean existeEnMovimientos = socioDAO.existeEnMovimientos(noSocio, tipoSocio);
+            if (!existeEnMovimientos) {
+                int respuesta = JOptionPane.showConfirmDialog(this,
+                    "El socio #" + noSocio + " no tiene registros en MovimientosSocio como " + tipoSocio + ".\n" +
+                    "¿Desea continuar con la eliminación de todos modos?",
+                    "Advertencia de datos",
+                    JOptionPane.YES_NO_OPTION,
+                    JOptionPane.WARNING_MESSAGE);
+                
+                if (respuesta != JOptionPane.YES_OPTION) {
+                    return;
+                }
+            }
+                
             // Eliminar socio
             boolean exito = socioDAO.eliminarSocio(noSocio, esInfantil, totalRetiro);
             
