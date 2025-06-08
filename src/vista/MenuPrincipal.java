@@ -180,10 +180,8 @@ public class MenuPrincipal extends JFrame {
         // Menú Reportes
         JMenu menuReportes = new JMenu("Reportes");
         menuReportes.setMnemonic(KeyEvent.VK_R);
-        
-        JMenuItem itemReporteDiarioAdultos = new JMenuItem("Reporte Diarios de Adultos", KeyEvent.VK_I);
+          JMenuItem itemReporteDiarioAdultos = new JMenuItem("Reporte Diarios de Adultos", KeyEvent.VK_I);
         JMenuItem itemReporteDiarioInfantes = new JMenuItem("Reporte Diario de Infantes", KeyEvent.VK_E);
-        JMenuItem itemReporteDiario = new JMenuItem("Reporte Mensual en General ", KeyEvent.VK_T);
         JMenuItem itemReporteMensualAdultos = new JMenuItem("Reporte Mensual Adultos", KeyEvent.VK_P);
         JMenuItem itemReporteMensualInfantes = new JMenuItem("Reporte Mensual de Infantes", KeyEvent.VK_M);
         JMenuItem itemReporteMensual = new JMenuItem("Reporte Mensual General", KeyEvent.VK_G);
@@ -192,9 +190,26 @@ public class MenuPrincipal extends JFrame {
         JMenuItem itemReporteAnualInfantes = new JMenuItem("Reporte Anual de Infantes", KeyEvent.VK_N);
         JMenuItem itemReporteAnual = new JMenuItem("Reporte Anual General", KeyEvent.VK_L);
         
+        // Añadir acción al menú de reporte diario de adultos
+        itemReporteDiarioAdultos.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JPanel panelReporteDiarioAdultos = new ReporteDiarioAdultosPanel(MenuPrincipal.this);
+                cambiarPanel(panelReporteDiarioAdultos, "reporteDiarioAdultos");
+            }
+        });
+        
+        // Añadir acción al menú de reporte diario de infantes
+        itemReporteDiarioInfantes.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JPanel panelReporteDiarioInfantes = new ReporteDiarioInfantesPanel(MenuPrincipal.this);
+                cambiarPanel(panelReporteDiarioInfantes, "reporteDiarioInfantes");
+            }
+        });
+        
         menuReportes.add(itemReporteDiarioAdultos);
         menuReportes.add(itemReporteDiarioInfantes);
-        menuReportes.add(itemReporteDiario);
         menuReportes.addSeparator();
         menuReportes.add(itemReporteMensualAdultos);
         menuReportes.add(itemReporteMensualInfantes);

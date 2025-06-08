@@ -1,0 +1,367 @@
+package vista;
+
+import javax.swing.*;
+import javax.swing.table.*;
+import java.awt.*;
+import java.awt.event.*;
+import java.sql.*;
+import java.text.DecimalFormat;
+import java.util.*;
+import javax.swing.border.EmptyBorder;
+
+import conexion.Conexion;
+
+/**
+ * Panel para mostrar el reporte diario de socios infantiles
+ */
+public class ReporteDiarioInfantesPanel extends JPanel {
+    
+    private JTable tablaReporte;
+    private DefaultTableModel modeloTabla;
+    private JComboBox<String> cboAnio;
+    private JComboBox<String> cboMes;
+    private JComboBox<String> cboDia;
+    private JButton btnGenerar;
+    private JButton btnVolver;
+    private MenuPrincipal menuPrincipal;
+    private Conexion conexion;
+    private JPanel panelTotales;    private JLabel lblTotalIngresos;
+    private JLabel lblTotalEgresos;
+    private JLabel lblTotal;
+    private Calendar calendario;
+    private JPanel panelSuperior;
+    private JLabel lblTitulo;
+    
+    /**
+     * Constructor
+     * @param menuPrincipal Referencia al menú principal
+     */
+    public ReporteDiarioInfantesPanel(MenuPrincipal menuPrincipal) {
+        this.menuPrincipal = menuPrincipal;
+        this.conexion = new Conexion();
+        inicializarComponentes();
+    }
+    
+    /**
+     * Inicializa los componentes del panel
+     */
+    private void inicializarComponentes() {
+        setLayout(new BorderLayout(10, 10));
+        setBorder(new EmptyBorder(10, 10, 10, 10));
+        setBackground(new Color(240, 248, 255));
+          // Panel superior con título y fecha
+        panelSuperior = new JPanel(new BorderLayout(10, 0));
+        panelSuperior.setBackground(new Color(240, 248, 255));
+        panelSuperior.setBorder(new EmptyBorder(0, 0, 10, 0));
+        
+        lblTitulo = new JLabel("Reporte Diario de Socios Infantiles");
+        lblTitulo.setFont(new Font("Arial", Font.BOLD, 24));
+        panelSuperior.add(lblTitulo, BorderLayout.WEST);
+          JPanel panelFecha = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        panelFecha.setBackground(new Color(240, 248, 255));
+        
+        JLabel lblFecha = new JLabel("Seleccionar fecha: ");
+        lblFecha.setFont(new Font("Arial", Font.PLAIN, 14));
+        
+        // Inicializar el calendario con la fecha actual
+        calendario = Calendar.getInstance();
+        int anioActual = calendario.get(Calendar.YEAR);
+        int mesActual = calendario.get(Calendar.MONTH);
+        int diaActual = calendario.get(Calendar.DAY_OF_MONTH);
+        
+        // Crear los combos para seleccionar fecha
+        // Combo para día
+        cboDia = new JComboBox<>();
+        for (int i = 1; i <= 31; i++) {
+            cboDia.addItem(String.format("%02d", i));
+        }
+        cboDia.setSelectedItem(String.format("%02d", diaActual));
+        cboDia.setPreferredSize(new Dimension(60, 25));
+        cboDia.setFont(new Font("Arial", Font.PLAIN, 14));
+        
+        // Combo para mes
+        cboMes = new JComboBox<>();
+        String[] meses = {"01 - Enero", "02 - Febrero", "03 - Marzo", "04 - Abril",
+                          "05 - Mayo", "06 - Junio", "07 - Julio", "08 - Agosto",
+                          "09 - Septiembre", "10 - Octubre", "11 - Noviembre", "12 - Diciembre"};
+        for (String mes : meses) {
+            cboMes.addItem(mes);
+        }
+        cboMes.setSelectedIndex(mesActual);
+        cboMes.setPreferredSize(new Dimension(130, 25));
+        cboMes.setFont(new Font("Arial", Font.PLAIN, 14));
+        
+        // Evento de cambio de mes para ajustar días disponibles
+        cboMes.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                actualizarDiasDisponibles();
+            }
+        });
+        
+        // Combo para año
+        cboAnio = new JComboBox<>();
+        int anioInicial = anioActual - 5;  // 5 años antes del actual
+        for (int i = anioInicial; i <= anioActual + 1; i++) {
+            cboAnio.addItem(String.valueOf(i));
+        }
+        cboAnio.setSelectedItem(String.valueOf(anioActual));
+        cboAnio.setPreferredSize(new Dimension(70, 25));
+        cboAnio.setFont(new Font("Arial", Font.PLAIN, 14));
+        
+        // Evento de cambio de año para ajustar días disponibles
+        cboAnio.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                actualizarDiasDisponibles();
+            }
+        });
+        
+        btnGenerar = new JButton("Generar Reporte");
+        btnGenerar.setFont(new Font("Arial", Font.BOLD, 14));
+        btnGenerar.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                generarReporte();
+            }
+        });
+        
+        panelFecha.add(lblFecha);
+        panelFecha.add(cboDia);
+        panelFecha.add(new JLabel("/"));
+        panelFecha.add(cboMes);
+        panelFecha.add(new JLabel("/"));
+        panelFecha.add(cboAnio);
+        panelFecha.add(btnGenerar);
+        
+        panelSuperior.add(panelFecha, BorderLayout.EAST);
+        
+        add(panelSuperior, BorderLayout.NORTH);
+        
+        // Crear el modelo y la tabla
+        String[] columnas = {"No. Socio", "Nombre", "Apellido(s)", "Ahorro", "RetAhorro"};
+        
+        modeloTabla = new DefaultTableModel(columnas, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false; // Hacer la tabla no editable
+            }
+            @Override
+            public Class<?> getColumnClass(int columnIndex) {
+                if (columnIndex >= 3) return Double.class; // Columnas numéricas
+                return String.class;
+            }
+        };
+        
+        tablaReporte = new JTable(modeloTabla);
+        tablaReporte.setFont(new Font("Arial", Font.PLAIN, 12));
+        tablaReporte.getTableHeader().setFont(new Font("Arial", Font.BOLD, 12));
+        tablaReporte.setRowHeight(25);
+        tablaReporte.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+        tablaReporte.setFillsViewportHeight(true);
+        
+        // Configurar renderer para los valores monetarios
+        DefaultTableCellRenderer moneyRenderer = new DefaultTableCellRenderer() {
+            private final DecimalFormat formatter = new DecimalFormat("$ #,##0.00");
+            
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value, 
+                    boolean isSelected, boolean hasFocus, int row, int column) {
+                if (value instanceof Number) {
+                    value = formatter.format(((Number) value).doubleValue());
+                }
+                return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            }
+        };
+        moneyRenderer.setHorizontalAlignment(JLabel.RIGHT);
+        
+        // Aplicar renderer a columnas monetarias
+        for (int i = 3; i < tablaReporte.getColumnCount(); i++) {
+            tablaReporte.getColumnModel().getColumn(i).setCellRenderer(moneyRenderer);
+        }
+        
+        // Ajustar anchos de columna
+        tablaReporte.getColumnModel().getColumn(0).setPreferredWidth(60); // No. Socio
+        tablaReporte.getColumnModel().getColumn(1).setPreferredWidth(120); // Nombre
+        tablaReporte.getColumnModel().getColumn(2).setPreferredWidth(150); // Apellido(s)
+        
+        // Panel de desplazamiento para la tabla
+        JScrollPane scrollPane = new JScrollPane(tablaReporte);
+        scrollPane.setBorder(BorderFactory.createEtchedBorder());
+        
+        add(scrollPane, BorderLayout.CENTER);
+        
+        // Panel para mostrar totales
+        panelTotales = new JPanel(new GridLayout(2, 2, 10, 5));
+        panelTotales.setBackground(new Color(240, 248, 255));
+        panelTotales.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createEmptyBorder(10, 0, 0, 0),
+            BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Totales")
+        ));
+        
+        lblTotalIngresos = new JLabel("Total Ingresos: $ 0.00");
+        lblTotalIngresos.setFont(new Font("Arial", Font.BOLD, 14));
+        
+        lblTotalEgresos = new JLabel("Total Egresos: $ 0.00");
+        lblTotalEgresos.setFont(new Font("Arial", Font.BOLD, 14));
+        
+        lblTotal = new JLabel("TOTAL: $ 0.00");
+        lblTotal.setFont(new Font("Arial", Font.BOLD, 16));
+        
+        JPanel panelBotones = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        panelBotones.setBackground(new Color(240, 248, 255));
+        
+        btnVolver = new JButton("Volver al Menú");
+        btnVolver.setFont(new Font("Arial", Font.BOLD, 14));
+        btnVolver.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                menuPrincipal.mostrarPanelBienvenida();
+            }
+        });
+        
+        panelBotones.add(btnVolver);
+        
+        panelTotales.add(lblTotalIngresos);
+        panelTotales.add(lblTotalEgresos);
+        panelTotales.add(lblTotal);
+        panelTotales.add(panelBotones);
+        
+        add(panelTotales, BorderLayout.SOUTH);
+        
+        // Generar reporte inicial
+        generarReporte();
+    }
+    
+    /**
+     * Genera el reporte diario según la fecha seleccionada
+     */    private void generarReporte() {
+        // Limpiar la tabla
+        modeloTabla.setRowCount(0);
+        
+        // Obtener la fecha seleccionada de los combos
+        int anio = Integer.parseInt(cboAnio.getSelectedItem().toString());
+        int mes = cboMes.getSelectedIndex();
+        int dia = Integer.parseInt(cboDia.getSelectedItem().toString());
+        
+        // Crear un objeto Calendar con la fecha seleccionada
+        Calendar cal = Calendar.getInstance();
+        cal.set(anio, mes, dia);
+        cal.set(Calendar.HOUR_OF_DAY, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+        java.util.Date fechaSeleccionada = cal.getTime();
+        
+        try {
+            // Consulta SQL para obtener los movimientos de socios infantiles en la fecha seleccionada
+            String consulta = "SELECT ms.NoSocio, si.Nombres, si.Apellidos, " +
+                         "ms.AhoIngresos, ms.AhoEgresos " +
+                         "FROM MovimientosSocio ms " +
+                         "LEFT JOIN SociosInfa si ON ms.NoSocio = si.NoSocio " +
+                         "WHERE ms.Fecha = ? AND (ms.TipoSocio = 'INFANTIL' OR ms.TipoSocio = 'INFANTE') " +
+                         "ORDER BY ms.NoSocio";
+            
+            PreparedStatement pstmt = conexion.getConexion().prepareStatement(consulta);
+            // Convertir a java.sql.Date para utilizar con la base de datos
+            java.sql.Date sqlDate = new java.sql.Date(fechaSeleccionada.getTime());
+            pstmt.setDate(1, sqlDate);
+            
+            ResultSet rs = pstmt.executeQuery();
+            
+            double totalAhoIngresos = 0;
+            double totalAhoEgresos = 0;
+            
+            // Agregar filas a la tabla
+            while (rs.next()) {
+                int noSocio = rs.getInt("NoSocio");
+                String nombre = rs.getString("Nombres");
+                String apellidos = rs.getString("Apellidos");
+                double ahoIngresos = rs.getDouble("AhoIngresos");
+                double ahoEgresos = rs.getDouble("AhoEgresos");
+                
+                // Sumar a los totales
+                totalAhoIngresos += ahoIngresos;
+                totalAhoEgresos += ahoEgresos;
+                
+                // Agregar fila a la tabla
+                modeloTabla.addRow(new Object[]{
+                    noSocio,
+                    nombre != null ? nombre : "",
+                    apellidos != null ? apellidos : "",
+                    ahoIngresos,
+                    ahoEgresos
+                });
+            }
+            
+            rs.close();
+            pstmt.close();
+            
+            // Agregar fila de totales
+            modeloTabla.addRow(new Object[]{
+                "TOTALES",
+                "",
+                "",
+                totalAhoIngresos,
+                totalAhoEgresos
+            });
+            
+            // Calcular totales
+            double total = totalAhoIngresos - totalAhoEgresos;
+            
+            // Actualizar las etiquetas de totales
+            DecimalFormat df = new DecimalFormat("$ #,##0.00");
+            lblTotalIngresos.setText("Total Ingresos: " + df.format(totalAhoIngresos));
+            lblTotalEgresos.setText("Total Egresos: " + df.format(totalAhoEgresos));
+            lblTotal.setText("TOTAL: " + df.format(total));
+              // Cambiar color del total según sea positivo o negativo
+            if (total >= 0) {
+                lblTotal.setForeground(new Color(0, 128, 0)); // Verde
+            } else {
+                lblTotal.setForeground(new Color(255, 0, 0)); // Rojo
+            }
+            
+            // Mostrar la fecha seleccionada en el título
+            String fechaFormateada = String.format("%02d/%02d/%04d", dia, mes + 1, anio);
+            lblTitulo.setText("Reporte Diario de Socios Infantiles - " + fechaFormateada);
+            
+        } catch (SQLException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, 
+                    "Error al generar el reporte: " + e.getMessage(), 
+                    "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+    
+    /**
+     * Actualiza los días disponibles según el mes y año seleccionados
+     */
+    private void actualizarDiasDisponibles() {
+        int mes = cboMes.getSelectedIndex();
+        int anio = Integer.parseInt(cboAnio.getSelectedItem().toString());
+        
+        // Guardar el índice seleccionado actual
+        int indiceSeleccionado = cboDia.getSelectedIndex();
+        
+        // Limpiar los días
+        cboDia.removeAllItems();
+        
+        // Determinar la cantidad de días para el mes y año seleccionados
+        Calendar cal = Calendar.getInstance();
+        cal.set(anio, mes, 1);
+        int diasEnMes = cal.getActualMaximum(Calendar.DAY_OF_MONTH);
+        
+        // Añadir los días al combo
+        for (int i = 1; i <= diasEnMes; i++) {
+            cboDia.addItem(String.format("%02d", i));
+        }
+        
+        // Restaurar la selección si es posible
+        if (indiceSeleccionado < diasEnMes) {
+            cboDia.setSelectedIndex(indiceSeleccionado);
+        } else {
+            // Si el día seleccionado antes no existe en el nuevo mes, seleccionar el último día
+            cboDia.setSelectedIndex(diasEnMes - 1);
+        }
+    }
+}
