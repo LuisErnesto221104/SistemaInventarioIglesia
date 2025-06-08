@@ -198,13 +198,39 @@ public class MenuPrincipal extends JFrame {
                 cambiarPanel(panelReporteDiarioAdultos, "reporteDiarioAdultos");
             }
         });
-        
-        // Añadir acción al menú de reporte diario de infantes
+          // Añadir acción al menú de reporte diario de infantes
         itemReporteDiarioInfantes.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 JPanel panelReporteDiarioInfantes = new ReporteDiarioInfantesPanel(MenuPrincipal.this);
                 cambiarPanel(panelReporteDiarioInfantes, "reporteDiarioInfantes");
+            }
+        });
+        
+        // Añadir acción al menú de reporte mensual de adultos
+        itemReporteMensualAdultos.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JPanel panelReporteMensualAdultos = new ReporteMensualAdultosPanel(MenuPrincipal.this);
+                cambiarPanel(panelReporteMensualAdultos, "reporteMensualAdultos");
+            }
+        });
+        
+        // Añadir acción al menú de reporte mensual de infantes
+        itemReporteMensualInfantes.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JPanel panelReporteMensualInfantes = new ReporteMensualInfantesPanel(MenuPrincipal.this);
+                cambiarPanel(panelReporteMensualInfantes, "reporteMensualInfantes");
+            }
+        });
+        
+        // Añadir acción al menú de reporte mensual general
+        itemReporteMensual.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JPanel panelReporteMensualGeneral = new ReporteMensualGeneralPanel(MenuPrincipal.this);
+                cambiarPanel(panelReporteMensualGeneral, "reporteMensualGeneral");
             }
         });
         
