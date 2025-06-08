@@ -184,11 +184,36 @@ public class MenuPrincipal extends JFrame {
         JMenuItem itemReporteDiarioGeneral = new JMenuItem("Reporte Diario General", KeyEvent.VK_D);
         JMenuItem itemReporteMensualAdultos = new JMenuItem("Reporte Mensual Adultos", KeyEvent.VK_P);
         JMenuItem itemReporteMensualInfantes = new JMenuItem("Reporte Mensual de Infantes", KeyEvent.VK_M);
-        JMenuItem itemReporteMensual = new JMenuItem("Reporte Mensual General", KeyEvent.VK_G);
-
-        JMenuItem itemReporteAnualAdultos = new JMenuItem("Reporte Anual Adultos", KeyEvent.VK_A);
+        JMenuItem itemReporteMensual = new JMenuItem("Reporte Mensual General", KeyEvent.VK_G);        JMenuItem itemReporteAnualAdultos = new JMenuItem("Reporte Anual Adultos", KeyEvent.VK_A);
         JMenuItem itemReporteAnualInfantes = new JMenuItem("Reporte Anual de Infantes", KeyEvent.VK_N);
         JMenuItem itemReporteAnual = new JMenuItem("Reporte Anual General", KeyEvent.VK_L);
+        
+        // Añadir acción al menú de reporte anual de adultos
+        itemReporteAnualAdultos.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JPanel panelReporteAnualAdultos = new ReporteAnualAdultosPanel(MenuPrincipal.this);
+                cambiarPanel(panelReporteAnualAdultos, "reporteAnualAdultos");
+            }
+        });
+        
+        // Añadir acción al menú de reporte anual de infantiles
+        itemReporteAnualInfantes.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JPanel panelReporteAnualInfantes = new ReporteAnualInfantesPanel(MenuPrincipal.this);
+                cambiarPanel(panelReporteAnualInfantes, "reporteAnualInfantes");
+            }
+        });
+        
+        // Añadir acción al menú de reporte anual general
+        itemReporteAnual.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JPanel panelReporteAnualGeneral = new ReporteAnualGeneralPanel(MenuPrincipal.this);
+                cambiarPanel(panelReporteAnualGeneral, "reporteAnualGeneral");
+            }
+        });
         
         // Añadir acción al menú de reporte diario de adultos
         itemReporteDiarioAdultos.addActionListener(new ActionListener() {
