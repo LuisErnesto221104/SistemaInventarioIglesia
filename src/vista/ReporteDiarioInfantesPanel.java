@@ -4,8 +4,10 @@ import javax.swing.*;
 import javax.swing.table.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.print.PrinterException;
 import java.sql.*;
 import java.text.DecimalFormat;
+import java.text.MessageFormat;
 import java.util.*;
 import javax.swing.border.EmptyBorder;
 
@@ -15,14 +17,14 @@ import conexion.Conexion;
  * Panel para mostrar el reporte diario de socios infantiles
  */
 public class ReporteDiarioInfantesPanel extends JPanel {
-    
-    private JTable tablaReporte;
+      private JTable tablaReporte;
     private DefaultTableModel modeloTabla;
     private JComboBox<String> cboAnio;
     private JComboBox<String> cboMes;
     private JComboBox<String> cboDia;
     private JButton btnGenerar;
     private JButton btnVolver;
+    private JButton btnImprimir;
     private MenuPrincipal menuPrincipal;
     private Conexion conexion;
     private JPanel panelTotales;    private JLabel lblTotalIngresos;
@@ -98,11 +100,10 @@ public class ReporteDiarioInfantesPanel extends JPanel {
                 actualizarDiasDisponibles();
             }
         });
-        
-        // Combo para año
+          // Combo para año
         cboAnio = new JComboBox<>();
-        int anioInicial = anioActual - 5;  // 5 años antes del actual
-        for (int i = anioInicial; i <= anioActual + 1; i++) {
+        // Rango de años fijo de 2010 a 2050
+        for (int i = 2010; i <= 2050; i++) {
             cboAnio.addItem(String.valueOf(i));
         }
         cboAnio.setSelectedItem(String.valueOf(anioActual));
@@ -207,9 +208,17 @@ public class ReporteDiarioInfantesPanel extends JPanel {
         
         lblTotal = new JLabel("TOTAL: $ 0.00");
         lblTotal.setFont(new Font("Arial", Font.BOLD, 16));
-        
-        JPanel panelBotones = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+          JPanel panelBotones = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         panelBotones.setBackground(new Color(240, 248, 255));
+        
+        btnImprimir = new JButton("Imprimir Reporte");
+        btnImprimir.setFont(new Font("Arial", Font.BOLD, 14));
+        btnImprimir.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                imprimirReporte();
+            }
+        });
         
         btnVolver = new JButton("Volver al Menú");
         btnVolver.setFont(new Font("Arial", Font.BOLD, 14));
@@ -220,6 +229,7 @@ public class ReporteDiarioInfantesPanel extends JPanel {
             }
         });
         
+        panelBotones.add(btnImprimir);
         panelBotones.add(btnVolver);
         
         panelTotales.add(lblTotalIngresos);
@@ -332,8 +342,7 @@ public class ReporteDiarioInfantesPanel extends JPanel {
                     "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
-    
-    /**
+      /**
      * Actualiza los días disponibles según el mes y año seleccionados
      */
     private void actualizarDiasDisponibles() {
@@ -362,6 +371,54 @@ public class ReporteDiarioInfantesPanel extends JPanel {
         } else {
             // Si el día seleccionado antes no existe en el nuevo mes, seleccionar el último día
             cboDia.setSelectedIndex(diasEnMes - 1);
+        }
+    }
+    
+    /**
+     * Imprime la tabla de reporte
+     */
+    private void imprimirReporte() {
+        try {
+            // Mensaje de impresión en proceso
+            JOptionPane.showMessageDialog(this,
+                "Preparando impresión...",
+                "Impresión", JOptionPane.INFORMATION_MESSAGE);
+            
+            // Obtener la fecha seleccionada para mostrar en el título
+            int anio = Integer.parseInt(cboAnio.getSelectedItem().toString());
+            int mes = cboMes.getSelectedIndex();
+            int dia = Integer.parseInt(cboDia.getSelectedItem().toString());
+            String fechaFormateada = String.format("%02d/%02d/%04d", dia, mes + 1, anio);
+            
+            // Crear un trabajo de impresión
+            MessageFormat header = new MessageFormat("Reporte Diario de Socios Infantiles - " + fechaFormateada);
+            MessageFormat footer = new MessageFormat("Página {0}");
+            
+            // Intentar imprimir la tabla
+            boolean complete = tablaReporte.print(
+                JTable.PrintMode.FIT_WIDTH,      // Modo de impresión para ajustar al ancho de página
+                header,                          // Encabezado
+                footer,                          // Pie de página
+                true,                            // Mostrar diálogo de impresión
+                null,                            // Atributos de impresión (usar predeterminados)
+                true,                            // Interactivo - muestra diálogos de error si los hay
+                null);                           // Servicio de impresión (usar predeterminado)
+                
+            // Mensaje según resultado
+            if (complete) {
+                JOptionPane.showMessageDialog(this,
+                    "Impresión completada correctamente",
+                    "Información", JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(this,
+                    "Impresión cancelada o incompleta",
+                    "Aviso", JOptionPane.WARNING_MESSAGE);
+            }
+        } catch (PrinterException pe) {
+            JOptionPane.showMessageDialog(this,
+                "Error de impresión: " + pe.getMessage(),
+                "Error", JOptionPane.ERROR_MESSAGE);
+            pe.printStackTrace();
         }
     }
 }
