@@ -5,6 +5,8 @@ import javax.swing.table.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.print.*;
+import javax.print.attribute.*;
+import javax.print.attribute.standard.*;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -160,8 +162,7 @@ public abstract class TablaBase extends JPanel {
             lblContador.setText("Total: " + totalRegistros + " registros");
         }
     }
-    
-    /**
+      /**
      * Imprime los datos de la tabla
      */
     protected void imprimirDatos() {
@@ -174,7 +175,19 @@ public abstract class TablaBase extends JPanel {
             
             JTable.PrintMode modo = JTable.PrintMode.FIT_WIDTH;
             
-            boolean status = tabla.print(modo, encabezado, pie, mostrarDialogo, null, interactivo);
+            // Configurar atributos de impresión para mejor ajuste y orientación horizontal
+            HashPrintRequestAttributeSet attributes = new HashPrintRequestAttributeSet();
+            attributes.add(OrientationRequested.LANDSCAPE); // Orientación horizontal
+            attributes.add(MediaSizeName.NA_LETTER); // Tamaño carta
+              // Guardar la fuente original y escalar temporalmente para impresión
+            Font originalFont = tabla.getFont();
+            tabla.setFont(new Font(originalFont.getName(), originalFont.getStyle(), 12));
+            
+            // Intentar imprimir la tabla con atributos personalizados
+            boolean status = tabla.print(modo, encabezado, pie, mostrarDialogo, attributes, interactivo);
+            
+            // Restaurar la fuente original después de imprimir
+            tabla.setFont(originalFont);
             
             if (status) {
                 JOptionPane.showMessageDialog(this, 

@@ -11,6 +11,8 @@ import java.text.DecimalFormat;
 import java.text.MessageFormat;
 import java.util.*;
 import javax.swing.border.EmptyBorder;
+import javax.print.attribute.*;
+import javax.print.attribute.standard.*;
 
 import conexion.Conexion;
 
@@ -157,9 +159,12 @@ public class ReporteMensualInfantesPanel extends JPanel {
         for (int i = 1; i < tablaReporte.getColumnCount(); i++) {
             tablaReporte.getColumnModel().getColumn(i).setCellRenderer(moneyRenderer);
         }
-        
-        // Ajustar anchos de columna
-        tablaReporte.getColumnModel().getColumn(0).setPreferredWidth(80); // Fecha
+          // Ajustar anchos de columna para mejor distribución en la impresión
+        tablaReporte.getColumnModel().getColumn(0).setPreferredWidth(70); // Fecha
+        // Ajustar columnas numéricas a un ancho más uniforme
+        for (int i = 1; i < tablaReporte.getColumnCount(); i++) {
+            tablaReporte.getColumnModel().getColumn(i).setPreferredWidth(80);
+        }
         
         // Panel de desplazamiento para la tabla
         JScrollPane scrollPane = new JScrollPane(tablaReporte);
@@ -358,8 +363,7 @@ public class ReporteMensualInfantesPanel extends JPanel {
                     "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
-    
-    /**
+      /**
      * Imprime la tabla de reporte
      */
     private void imprimirReporte() {
@@ -372,21 +376,47 @@ public class ReporteMensualInfantesPanel extends JPanel {
             // Obtener el mes y año seleccionados para mostrar en el título
             int anio = Integer.parseInt(cboAnio.getSelectedItem().toString());
             String mesTexto = cboMes.getSelectedItem().toString().substring(5); // Obtener la parte del nombre del mes
-            
-            // Crear un trabajo de impresión
-            MessageFormat header = new MessageFormat("Reporte Mensual de Socios Infantiles - " + mesTexto + " " + anio);
+              // Obtener texto de los totales para incluirlos en el encabezado
+            String textoIngresos = lblTotalIngresos.getText();
+            String textoEgresos = lblTotalEgresos.getText();
+            String textoTotal = lblTotal.getText();
+              // Crear un trabajo de impresión con encabezado que incluye totales y mejor espaciado
+            String headerText = "Reporte Mensual de Socios Infantiles - " + mesTexto + " " + anio + 
+                                "\n\n" + textoIngresos + "        " + textoEgresos + "        " + textoTotal;
+            MessageFormat header = new MessageFormat(headerText);
             MessageFormat footer = new MessageFormat("Página {0}");
             
-            // Intentar imprimir la tabla
+            // Configurar impresión para mejor ajuste y orientación horizontal
+            HashPrintRequestAttributeSet attributes = new HashPrintRequestAttributeSet();
+            attributes.add(OrientationRequested.LANDSCAPE); // Orientación horizontal
+            attributes.add(MediaSizeName.NA_LETTER); // Tamaño carta
+            
+            // Mejorar el manejo de página final y márgenes para la impresión
+            attributes.add(new MediaPrintableArea(
+                0.5f,   // Margen izquierdo en pulgadas
+                0.5f,   // Margen superior en pulgadas 
+                7.5f,   // Anchura imprimible en pulgadas (carta: 8.5 - márgenes)
+                10.0f,  // Altura imprimible en pulgadas (carta: 11.0 - márgenes)
+                MediaPrintableArea.INCH
+            ));
+              
+            // Guardar la fuente original y escalar temporalmente para impresión
+            Font originalFont = tablaReporte.getFont();
+            tablaReporte.setFont(new Font(originalFont.getName(), originalFont.getStyle(), 12));
+            
+            // Intentar imprimir la tabla con atributos personalizados
             boolean complete = tablaReporte.print(
                 JTable.PrintMode.FIT_WIDTH,      // Modo de impresión para ajustar al ancho de página
                 header,                          // Encabezado
                 footer,                          // Pie de página
                 true,                            // Mostrar diálogo de impresión
-                null,                            // Atributos de impresión (usar predeterminados)
+                attributes,                      // Atributos de impresión personalizados
                 true,                            // Interactivo - muestra diálogos de error si los hay
                 null);                           // Servicio de impresión (usar predeterminado)
                 
+            // Restaurar la fuente original después de imprimir
+            tablaReporte.setFont(originalFont);
+            
             // Mensaje según resultado
             if (complete) {
                 JOptionPane.showMessageDialog(this,

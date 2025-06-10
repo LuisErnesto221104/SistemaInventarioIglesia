@@ -1,14 +1,39 @@
 package vista;
 
-import dao.SocioDAO;
-import javax.swing.*;
-import javax.swing.table.*;
-import java.awt.*;
-import java.awt.event.*;
-import java.awt.print.*;
-import java.text.*;
-import java.util.*;
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.print.PrinterException;
+import java.sql.Date;
+import java.text.MessageFormat;
+import java.text.SimpleDateFormat;
 import java.util.List;
+import java.util.Map;
+
+import javax.print.attribute.HashPrintRequestAttributeSet;
+import javax.print.attribute.standard.MediaSizeName;
+import javax.print.attribute.standard.OrientationRequested;
+import javax.print.attribute.standard.MediaPrintableArea;
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
+import javax.swing.RowFilter;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableRowSorter;
+
+import dao.SocioDAO;
 
 /**
  * ListadoSociosAdultosPanelIntegrado
@@ -204,17 +229,39 @@ public class ListadoSociosAdultosPanelIntegrado extends JPanel {
         
         actualizarContador();
     }
-    
-    /**
+      /**
      * Imprime los datos de la tabla
      */
-    private void imprimirDatos() {
-        try {
-            MessageFormat encabezado = new MessageFormat("Listado de Socios");
+    private void imprimirDatos() {        try {
+            // Obtener texto del contador para incluirlo en el encabezado
+            String textoContador = lblContador.getText();
+              // Crear un trabajo de impresión con encabezado que incluye el contador y mejor espaciado
+            String headerText = "Listado de Socios Adultos\n\n" + textoContador;
+            MessageFormat encabezado = new MessageFormat(headerText);
             MessageFormat pie = new MessageFormat("Página {0}");
             JTable.PrintMode modo = JTable.PrintMode.FIT_WIDTH;
             
-            boolean status = tabla.print(modo, encabezado, pie, true, null, true);
+            // Configurar impresión para mejor ajuste y orientación horizontal
+            HashPrintRequestAttributeSet attributes = new HashPrintRequestAttributeSet();
+            attributes.add(OrientationRequested.LANDSCAPE); // Orientación horizontal
+            attributes.add(MediaSizeName.NA_LETTER); // Tamaño carta
+            
+            // Mejorar el manejo de página final y márgenes para la impresión
+            attributes.add(new MediaPrintableArea(
+                0.5f,   // Margen izquierdo en pulgadas
+                0.5f,   // Margen superior en pulgadas 
+                7.5f,   // Anchura imprimible en pulgadas (carta: 8.5 - márgenes)
+                10.0f,  // Altura imprimible en pulgadas (carta: 11.0 - márgenes)
+                MediaPrintableArea.INCH
+            ));
+              
+            // Guardar la fuente original y escalar temporalmente para impresión
+            Font originalFont = tabla.getFont();
+            tabla.setFont(new Font(originalFont.getName(), originalFont.getStyle(), 12));
+            
+            boolean status = tabla.print(modo, encabezado, pie, true, attributes, true);
+              // Restaurar la fuente original después de imprimir
+            tabla.setFont(originalFont);
             
             if (status) {
                 JOptionPane.showMessageDialog(this, 

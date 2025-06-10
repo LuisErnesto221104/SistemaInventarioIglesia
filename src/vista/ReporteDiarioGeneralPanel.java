@@ -10,6 +10,8 @@ import java.text.DecimalFormat;
 import java.text.MessageFormat;
 import java.util.*;
 import javax.swing.border.EmptyBorder;
+import javax.print.attribute.*;
+import javax.print.attribute.standard.*;
 
 import conexion.Conexion;
 
@@ -443,8 +445,7 @@ public class ReporteDiarioGeneralPanel extends JPanel {
     
     /**
      * Imprime la tabla de reporte
-     */
-    private void imprimirReporte() {
+     */    private void imprimirReporte() {
         try {
             // Mensaje de impresión en proceso
             JOptionPane.showMessageDialog(this,
@@ -455,21 +456,46 @@ public class ReporteDiarioGeneralPanel extends JPanel {
             int anio = Integer.parseInt(cboAnio.getSelectedItem().toString());
             int mes = cboMes.getSelectedIndex();
             int dia = Integer.parseInt(cboDia.getSelectedItem().toString());
-            String fechaFormateada = String.format("%02d/%02d/%04d", dia, mes + 1, anio);
+            String fechaFormateada = String.format("%02d/%02d/%04d", dia, mes + 1, anio);            // Obtener texto de los totales para incluirlos en el encabezado
+            String textoIngresos = lblTotalIngresos.getText();
+            String textoEgresos = lblTotalEgresos.getText();
+            String textoTotal = lblTotal.getText();
             
-            // Crear un trabajo de impresión
-            MessageFormat header = new MessageFormat("Reporte Diario General - " + fechaFormateada);
+            // Crear un trabajo de impresión con encabezado que incluye totales y mejor espaciado
+            String headerText = "Reporte Diario General - " + fechaFormateada + 
+                                "\n\n" + textoIngresos + "        " + textoEgresos + "        " + textoTotal;
+            MessageFormat header = new MessageFormat(headerText);
             MessageFormat footer = new MessageFormat("Página {0}");
             
-            // Intentar imprimir la tabla
+            // Configurar impresión para mejor ajuste y orientación horizontal
+            HashPrintRequestAttributeSet attributes = new HashPrintRequestAttributeSet();
+            attributes.add(OrientationRequested.LANDSCAPE); // Orientación horizontal
+            attributes.add(MediaSizeName.NA_LETTER); // Tamaño carta
+            
+            // Mejorar el manejo de página final y márgenes para la impresión
+            attributes.add(new MediaPrintableArea(
+                0.5f,   // Margen izquierdo en pulgadas
+                0.5f,   // Margen superior en pulgadas 
+                7.5f,   // Anchura imprimible en pulgadas (carta: 8.5 - márgenes)
+                10.0f,  // Altura imprimible en pulgadas (carta: 11.0 - márgenes)
+                MediaPrintableArea.INCH
+            ));
+              
+            // Guardar la fuente original y escalar temporalmente para impresión
+            Font originalFont = tablaReporte.getFont();
+            tablaReporte.setFont(new Font(originalFont.getName(), originalFont.getStyle(), 12));
+            
+            // Intentar imprimir la tabla con atributos personalizados
             boolean complete = tablaReporte.print(
                 JTable.PrintMode.FIT_WIDTH,      // Modo de impresión para ajustar al ancho de página
                 header,                          // Encabezado
                 footer,                          // Pie de página
                 true,                            // Mostrar diálogo de impresión
-                null,                            // Atributos de impresión (usar predeterminados)
+                attributes,                      // Atributos de impresión personalizados
                 true,                            // Interactivo - muestra diálogos de error si los hay
-                null);                           // Servicio de impresión (usar predeterminado)
+                null);                           // Servicio de impresión (usar predeterminado)                
+            // Restaurar la fuente original después de imprimir
+            tablaReporte.setFont(originalFont);
                 
             // Mensaje según resultado
             if (complete) {
