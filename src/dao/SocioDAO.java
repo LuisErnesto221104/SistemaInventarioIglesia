@@ -1129,4 +1129,96 @@ public class SocioDAO {
         }
         return tipo;
     }
+    
+    /**
+     * Obtiene el siguiente número de socio adulto disponible
+     * Este método busca números disponibles en huecos (cuando se han eliminado socios)
+     * Si no encuentra huecos, devuelve el siguiente número consecutivo
+     * @return Siguiente número de socio adulto disponible
+     */
+    public int obtenerSiguienteNumeroSocioAdulto() {
+        int siguienteNumero = 0;
+        
+        try {
+            // Primero intentamos encontrar un hueco en la numeración
+            String consultaHuecos = 
+                "SELECT t1.NoSocio + 1 AS HuecoDisponible " +
+                "FROM Socios t1 " +
+                "LEFT JOIN Socios t2 ON t1.NoSocio + 1 = t2.NoSocio " +
+                "WHERE t2.NoSocio IS NULL AND t1.NoSocio + 1 < (" +
+                "    SELECT MAX(NoSocio) FROM Socios" +
+                ") " +
+                "ORDER BY t1.NoSocio " +
+                "LIMIT 1";
+            
+            Statement statementHuecos = conexion.getConexion().createStatement();
+            ResultSet resultadoHuecos = statementHuecos.executeQuery(consultaHuecos);
+            
+            // Si encontramos un hueco, usamos ese número
+            if (resultadoHuecos.next()) {
+                siguienteNumero = resultadoHuecos.getInt("HuecoDisponible");
+                System.out.println("Se encontró un hueco disponible para socio adulto: " + siguienteNumero);
+            } else {
+                // Si no hay huecos, usamos el siguiente al último número
+                siguienteNumero = obtenerUltimoNumeroSocioAdulto() + 1;
+                System.out.println("No se encontraron huecos, siguiente número para socio adulto: " + siguienteNumero);
+            }
+            
+            resultadoHuecos.close();
+            statementHuecos.close();
+            
+        } catch (SQLException e) {
+            // Si ocurre algún error, usamos el método tradicional
+            System.err.println("Error al buscar huecos para socio adulto: " + e.getMessage());
+            siguienteNumero = obtenerUltimoNumeroSocioAdulto() + 1;
+        }
+        
+        return siguienteNumero;
+    }
+    
+    /**
+     * Obtiene el siguiente número de socio infantil disponible
+     * Este método busca números disponibles en huecos (cuando se han eliminado socios)
+     * Si no encuentra huecos, devuelve el siguiente número consecutivo
+     * @return Siguiente número de socio infantil disponible
+     */
+    public int obtenerSiguienteNumeroSocioInfantil() {
+        int siguienteNumero = 0;
+        
+        try {
+            // Primero intentamos encontrar un hueco en la numeración
+            String consultaHuecos = 
+                "SELECT t1.NoSocio + 1 AS HuecoDisponible " +
+                "FROM SociosInfa t1 " +
+                "LEFT JOIN SociosInfa t2 ON t1.NoSocio + 1 = t2.NoSocio " +
+                "WHERE t2.NoSocio IS NULL AND t1.NoSocio + 1 < (" +
+                "    SELECT MAX(NoSocio) FROM SociosInfa" +
+                ") " +
+                "ORDER BY t1.NoSocio " +
+                "LIMIT 1";
+            
+            Statement statementHuecos = conexion.getConexion().createStatement();
+            ResultSet resultadoHuecos = statementHuecos.executeQuery(consultaHuecos);
+            
+            // Si encontramos un hueco, usamos ese número
+            if (resultadoHuecos.next()) {
+                siguienteNumero = resultadoHuecos.getInt("HuecoDisponible");
+                System.out.println("Se encontró un hueco disponible para socio infantil: " + siguienteNumero);
+            } else {
+                // Si no hay huecos, usamos el siguiente al último número
+                siguienteNumero = obtenerUltimoNumeroSocioInfantil() + 1;
+                System.out.println("No se encontraron huecos, siguiente número para socio infantil: " + siguienteNumero);
+            }
+            
+            resultadoHuecos.close();
+            statementHuecos.close();
+            
+        } catch (SQLException e) {
+            // Si ocurre algún error, usamos el método tradicional
+            System.err.println("Error al buscar huecos para socio infantil: " + e.getMessage());
+            siguienteNumero = obtenerUltimoNumeroSocioInfantil() + 1;
+        }
+        
+        return siguienteNumero;
+    }
 }

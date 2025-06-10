@@ -505,17 +505,16 @@ public class NuevoSocioPanelIntegrado extends JPanel {
     
     /**
      * Actualiza el número de socio según el tipo seleccionado
-     */
-    private void actualizarNumeroSocio() {
-        int ultimoNumero;
+     */    private void actualizarNumeroSocio() {
+        int siguienteNumero;
         
         if (cboTipoSocio.getSelectedIndex() == 0) { // Adulto
-            ultimoNumero = socioDAO.obtenerUltimoNumeroSocioAdulto();
+            siguienteNumero = socioDAO.obtenerSiguienteNumeroSocioAdulto();
         } else { // Infantil
-            ultimoNumero = socioDAO.obtenerUltimoNumeroSocioInfantil();
+            siguienteNumero = socioDAO.obtenerSiguienteNumeroSocioInfantil();
         }
         
-        txtNoSocio.setText(String.valueOf(ultimoNumero + 1));
+        txtNoSocio.setText(String.valueOf(siguienteNumero));
     }
     
     /**
