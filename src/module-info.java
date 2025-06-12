@@ -14,10 +14,10 @@ open module SistemsaVentas {
     
     // Esta línea permite al módulo acceder a todas las clases en el classpath
     // Exportar vista a todos los módulos (incluido com.toedter.calendar)
-    exports vista;
+    exports view;
 
     // Exportar paquetes
-    exports conexion;
-    exports dao;
+    exports connection;
+    exports tools;
 }
 
