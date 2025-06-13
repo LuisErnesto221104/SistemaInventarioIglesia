@@ -161,9 +161,6 @@ public class MenuPrincipal extends JFrame {
         menuMovimientos.setMnemonic(KeyEvent.VK_H);
           JMenuItem itemDeposito = new JMenuItem("Movimiento de Socio", KeyEvent.VK_D);
         JMenuItem itemRetiro = new JMenuItem("Retiro de Intereses", KeyEvent.VK_R);
-        JMenuItem itemDepositoBancario = new JMenuItem("Depositos Bancarios", KeyEvent.VK_M);
-        JMenuItem itemRetiroDepositoBancario = new JMenuItem("Retiro de Deposito Bancario", KeyEvent.VK_C);
-        JMenuItem itemOtros = new JMenuItem("Otros Moviminetos(Ingresos, Egresos, Gastos)");
         
         // Añadir acción al menú de movimiento de socio
         itemDeposito.addActionListener(new ActionListener() {
@@ -187,10 +184,6 @@ public class MenuPrincipal extends JFrame {
         menuMovimientos.addSeparator();
         menuMovimientos.add(itemRetiro);
         menuMovimientos.addSeparator();
-        menuMovimientos.add(itemRetiroDepositoBancario);
-        menuMovimientos.add(itemDepositoBancario);
-        menuMovimientos.addSeparator();
-        menuMovimientos.add(itemOtros);
 
           // Menú Reportes
         JMenu menuReportes = new JMenu("Reportes");

@@ -13,10 +13,16 @@ import tools.SocioDAO;
 import java.awt.*;
 import java.awt.event.*;
 import java.text.DecimalFormat;
+import java.text.MessageFormat;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.List;
+import java.awt.print.PrinterException;
+import javax.print.attribute.HashPrintRequestAttributeSet;
+import javax.print.attribute.standard.MediaPrintableArea;
+import javax.print.attribute.standard.MediaSizeName;
+import javax.print.attribute.standard.OrientationRequested;
 
 /**
  * Panel para calcular y mostrar el Premio al Ahorro de los socios
@@ -186,7 +192,7 @@ public class PremioAhorroPanel extends JPanel {
         lblPorcentajeInteres.setFont(new Font("Arial", Font.BOLD, 14));
         gbc.gridx = 2;
         gbc.gridy = 0;
-        gbc.insets = new Insets(5, 30, 5, 10); // Más espacio a la izquierda
+        gbc.insets = new Insets(5, 30, 5, 10); 
         panelParametros.add(lblPorcentajeInteres, gbc);
         
         // Campo Porcentaje Interés
@@ -213,7 +219,7 @@ public class PremioAhorroPanel extends JPanel {
         lblPorcentajeAhorro.setFont(new Font("Arial", Font.BOLD, 14));
         gbc.gridx = 4;
         gbc.gridy = 0;
-        gbc.insets = new Insets(5, 30, 5, 10); // Más espacio a la izquierda
+        gbc.insets = new Insets(5, 30, 5, 10); 
         panelParametros.add(lblPorcentajeAhorro, gbc);
         
         // Campo Porcentaje Ahorro
@@ -741,11 +747,9 @@ public class PremioAhorroPanel extends JPanel {
         
         return 0.0;
     }
-    
-    /**
+      /**
      * Imprime el reporte de premios al ahorro
-     */
-    private void imprimirReporte() {
+     */    private void imprimirReporte() {
         if (modeloTabla.getRowCount() == 0) {
             JOptionPane.showMessageDialog(this, 
                 "No hay datos para imprimir. Primero calcule los premios.", 
@@ -753,10 +757,115 @@ public class PremioAhorroPanel extends JPanel {
             return;
         }
         
-        JOptionPane.showMessageDialog(this, 
-            "La funcionalidad de impresión aún está en desarrollo.", 
-            "Información", JOptionPane.INFORMATION_MESSAGE);
+        // Mostrar cursor de espera mientras se prepara la impresión
+        setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         
-        // Aquí iría el código para imprimir el reporte cuando se implemente
-    }
+        try {
+            // Obtener texto del contador para incluirlo en el encabezado
+            String textoContador = "Total: " + modeloTabla.getRowCount() + " registros";
+            
+            // Crear un trabajo de impresión con encabezado que incluye el año seleccionado y el contador
+            String headerText = "Premios al Ahorro - Año " + añoSeleccionado + "\n\n" + textoContador;
+            MessageFormat encabezado = new MessageFormat(headerText);
+            MessageFormat pie = new MessageFormat("Página {0}");
+            JTable.PrintMode modo = JTable.PrintMode.FIT_WIDTH;
+            
+            // Configurar impresión para mejor ajuste y orientación horizontal
+            HashPrintRequestAttributeSet attributes = new HashPrintRequestAttributeSet();
+            attributes.add(OrientationRequested.LANDSCAPE); // Orientación horizontal
+            attributes.add(MediaSizeName.NA_LETTER); // Tamaño carta
+            
+            // Mejorar el manejo de página final y márgenes para la impresión
+            attributes.add(new MediaPrintableArea(
+                0.5f,   // Margen izquierdo en pulgadas
+                0.5f,   // Margen superior en pulgadas 
+                10.0f,  // Anchura imprimible en pulgadas (carta apaisada: 11.0 - márgenes)
+                7.5f,   // Altura imprimible en pulgadas (carta apaisada: 8.5 - márgenes)
+                MediaPrintableArea.INCH
+            ));            // Guardar la fuente original y escalar temporalmente para impresión
+            Font originalFont = tablaPremios.getFont();
+            tablaPremios.setFont(new Font(originalFont.getName(), originalFont.getStyle(), 11));
+            
+            // Guardar los renderizadores originales para restaurarlos después
+            TableColumnModel columnModel = tablaPremios.getColumnModel();
+            int[] columnasNumericas = {4, 5, 6, 7, 8}; // Columnas que contienen valores monetarios
+            
+            // Configurar un renderizador especial para los valores monetarios durante la impresión
+            DefaultTableCellRenderer rightRenderer = new DefaultTableCellRenderer();
+            rightRenderer.setHorizontalAlignment(SwingConstants.RIGHT);
+            DecimalFormat formatoMoneda = new DecimalFormat("$#,##0.00");
+            
+            for (int columna : columnasNumericas) {
+                if (columna < columnModel.getColumnCount()) {
+                    DefaultTableCellRenderer moneyRenderer = new DefaultTableCellRenderer() {
+                        @Override
+                        public Component getTableCellRendererComponent(JTable table, Object value,
+                                boolean isSelected, boolean hasFocus, int row, int column) {
+                            if (value instanceof Number) {
+                                value = formatoMoneda.format(((Number) value).doubleValue());
+                            }
+                            return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+                        }
+                    };
+                    moneyRenderer.setHorizontalAlignment(SwingConstants.RIGHT);
+                    columnModel.getColumn(columna).setCellRenderer(moneyRenderer);
+                }
+            }
+            
+            // Realizar la impresión
+            boolean status = tablaPremios.print(modo, encabezado, pie, true, attributes, true);            // Restaurar la fuente original después de imprimir
+            tablaPremios.setFont(originalFont);
+              // Restaurar los renderizadores originales (recreando la configuración original)
+            DecimalFormat moneyFormat = new DecimalFormat("$#,##0.00");
+            
+            DefaultTableCellRenderer moneyRenderer = new DefaultTableCellRenderer() {
+                @Override
+                public Component getTableCellRendererComponent(JTable table, Object value, 
+                        boolean isSelected, boolean hasFocus, int row, int column) {
+                    Component c = super.getTableCellRendererComponent(
+                            table, value, isSelected, hasFocus, row, column);
+                    
+                    // Aplicar formato de moneda a columnas de valores monetarios
+                    if (column >= 4 && column <= 8 && value != null) { // Columnas con valores monetarios
+                        if (value instanceof Number) {
+                            setText(moneyFormat.format(((Number)value).doubleValue()));
+                        }
+                    }
+                    
+                    return c;
+                }            };
+            moneyRenderer.setHorizontalAlignment(SwingConstants.RIGHT);
+            
+            // Aplicar el renderizador a las columnas monetarias
+            for (int i = 4; i <= 8; i++) {
+                if (i < tablaPremios.getColumnCount()) {
+                    tablaPremios.getColumnModel().getColumn(i).setCellRenderer(moneyRenderer);
+                }
+            }
+            
+            // Restaurar cursor normal
+            setCursor(Cursor.getDefaultCursor());
+            
+            // Informar al usuario sobre el estado de la impresión
+            if (status) {
+                JOptionPane.showMessageDialog(this, 
+                        "Impresión completada con éxito", 
+                        "Información", 
+                        JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(this, 
+                        "Impresión cancelada", 
+                        "Información", 
+                        JOptionPane.INFORMATION_MESSAGE);
+            }        } catch (PrinterException pe) {
+            JOptionPane.showMessageDialog(this, 
+                    "Error de impresión: " + pe.getMessage(), 
+                    "Error", 
+                    JOptionPane.ERROR_MESSAGE);
+            pe.printStackTrace();
+        } finally {
+            // Asegurarnos de restaurar el cursor normal incluso si hay error
+            setCursor(Cursor.getDefaultCursor());
+        }
+       }
 }
