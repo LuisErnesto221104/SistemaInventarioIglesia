@@ -43,7 +43,7 @@ public class NuevoSocioPanelIntegrado extends JPanel {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                // Aplicar el estilo de campos obligatorios sin marcarlos como error al inicio
+                // Aplicar el estilo de campos obligatorios sin marcarlos como error
                 aplicarEstiloCamposObligatorios();
             }
         });
@@ -94,42 +94,42 @@ public class NuevoSocioPanelIntegrado extends JPanel {
         }
         return esValido;
     }
-    
-    private void inicializarComponentes() {
-        // Configuración del panel
-        setLayout(new BorderLayout(10, 10));
-        setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+      private void inicializarComponentes() {
+        // Configuración del panel - Aumentando el tamaño
+        setLayout(new BorderLayout(15, 15));
+        setBorder(BorderFactory.createEmptyBorder(30, 30, 30, 30));
+        setPreferredSize(new Dimension(800, 700)); // Establecer un tamaño preferido más grande
         
         // Panel de título
         JPanel panelTitulo = new JPanel(new BorderLayout());
-        
-        JButton btnVolver = new JButton("Volver");
+          JButton btnVolver = new JButton("Volver");
+        btnVolver.setFont(new Font("Arial", Font.BOLD, 14)); // Letra más grande
+        btnVolver.setPreferredSize(new Dimension(120, 35)); // Botón más grande
         btnVolver.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 menuPrincipal.mostrarPanelBienvenida();
             }
         });
-        
-        JLabel lblTitulo = new JLabel("REGISTRO DE NUEVO SOCIO", JLabel.CENTER);
-        lblTitulo.setFont(new Font("Arial", Font.BOLD, 18));
+          JLabel lblTitulo = new JLabel("REGISTRO DE NUEVO SOCIO", JLabel.CENTER);
+        lblTitulo.setFont(new Font("Arial", Font.BOLD, 24)); // Texto más grande
         
         panelTitulo.add(btnVolver, BorderLayout.WEST);
         panelTitulo.add(lblTitulo, BorderLayout.CENTER);
-        
-        // Panel de formulario
+          // Panel de formulario - Aumentando el espaciado
         JPanel panelForm = new JPanel(new GridBagLayout());
+        panelForm.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(5, 5, 5, 5);
+        gbc.insets = new Insets(8, 8, 8, 8); // Mayor espaciado entre componentes
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        
-        // Tipo de socio
+          // Tipo de socio
         JLabel lblTipoSocio = new JLabel("Tipo de socio:");
+        lblTipoSocio.setFont(new Font("Arial", Font.BOLD, 14)); // Etiqueta con letra más grande
         gbc.gridx = 0;
         gbc.gridy = 0;
         panelForm.add(lblTipoSocio, gbc);
-        
-        cboTipoSocio = new JComboBox<>(new String[]{"Adulto", "Infantil"});
+          cboTipoSocio = new JComboBox<>(new String[]{"Adulto", "Infantil"});
+        cboTipoSocio.setFont(new Font("Arial", Font.PLAIN, 14)); // Letra más grande
         gbc.gridx = 1;
         gbc.gridy = 0;
         gbc.gridwidth = 2;
@@ -142,17 +142,17 @@ public class NuevoSocioPanelIntegrado extends JPanel {
                 actualizarNumeroSocio();
             }
         });
-        
-        // No. Socio
+          // No. Socio
         JLabel lblNoSocio = new JLabel("No. Socio:");
+        lblNoSocio.setFont(new Font("Arial", Font.BOLD, 14)); 
         gbc.gridx = 0;
         gbc.gridy = 1;
         gbc.gridwidth = 1;
         panelForm.add(lblNoSocio, gbc);
-        
-        txtNoSocio = new JTextField(10);
+        txtNoSocio = new JTextField(15);
         txtNoSocio.setEditable(false);
         txtNoSocio.setBackground(new Color(240, 240, 240));
+        txtNoSocio.setFont(new Font("Arial", Font.PLAIN, 14)); 
         gbc.gridx = 1;
         gbc.gridy = 1;
         gbc.gridwidth = 2;
@@ -160,6 +160,7 @@ public class NuevoSocioPanelIntegrado extends JPanel {
         
         // Fecha
         JLabel lblFecha = new JLabel("Fecha:");
+        lblFecha.setFont(new Font("Arial", Font.BOLD, 14)); 
         gbc.gridx = 0;
         gbc.gridy = 2;
         gbc.gridwidth = 1;
@@ -192,18 +193,20 @@ public class NuevoSocioPanelIntegrado extends JPanel {
         gbc.gridx = 1;
         gbc.gridy = 2;
         gbc.gridwidth = 2;
-        panelForm.add(panelFecha, gbc);
-          // Nombres (campo obligatorio)
+        panelForm.add(panelFecha, gbc);        // Nombres (campo obligatorio)
         JLabel lblNombres = new JLabel("Nombre(s)*:");
         lblNombres.setForeground(Color.RED);
+        lblNombres.setFont(new Font("Arial", Font.BOLD, 14)); // Etiqueta con letra más grande
         gbc.gridx = 0;
         gbc.gridy = 3;
         gbc.gridwidth = 1;
         panelForm.add(lblNombres, gbc);
-        
-        txtNombres = new JTextField(20);
+          txtNombres = new JTextField(30); // Aumentando el tamaño
+        // Configurar para texto en mayúsculas
+        txtNombres.setDocument(new DocumentoMayusculas());
         // Agregar borde para indicar estado de validación
         txtNombres.setBorder(BorderFactory.createLineBorder(Color.GRAY));
+        txtNombres.setFont(new Font("Arial", Font.PLAIN, 14)); // Letra más grande
         // Agregar validación mientras se escribe
         txtNombres.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
             @Override
@@ -222,17 +225,19 @@ public class NuevoSocioPanelIntegrado extends JPanel {
         gbc.gridx = 1;
         gbc.gridy = 3;
         gbc.gridwidth = 2;
-        panelForm.add(txtNombres, gbc);
-          // Apellidos (campo obligatorio)
+        panelForm.add(txtNombres, gbc);        // Apellidos (campo obligatorio)
         JLabel lblApellidos = new JLabel("Apellido(s)*:");
         lblApellidos.setForeground(Color.RED);
+        lblApellidos.setFont(new Font("Arial", Font.BOLD, 14)); // Etiqueta con letra más grande
         gbc.gridx = 0;
         gbc.gridy = 4;
         gbc.gridwidth = 1;
         panelForm.add(lblApellidos, gbc);
-        
-        txtApellidos = new JTextField(20);
+          txtApellidos = new JTextField(30); // Aumentando el tamaño
+        // Configurar para texto en mayúsculas
+        txtApellidos.setDocument(new DocumentoMayusculas());
         txtApellidos.setBorder(BorderFactory.createLineBorder(Color.GRAY));
+        txtApellidos.setFont(new Font("Arial", Font.PLAIN, 14)); // Letra más grande
         // Agregar validación mientras se escribe
         txtApellidos.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
             @Override
@@ -247,29 +252,29 @@ public class NuevoSocioPanelIntegrado extends JPanel {
             public void changedUpdate(javax.swing.event.DocumentEvent e) {
                 validarCampoObligatorio(txtApellidos);
             }
-        });
-        
-        txtApellidos = new JTextField(20);
+        });        // Ya se declaró txtApellidos antes
         gbc.gridx = 1;
         gbc.gridy = 4;
         gbc.gridwidth = 2;
         panelForm.add(txtApellidos, gbc);
-        
-        // Dirección
+          // Dirección
         JLabel lblDireccion = new JLabel("Dirección:");
+        lblDireccion.setFont(new Font("Arial", Font.BOLD, 14)); // Etiqueta con letra más grande
         gbc.gridx = 0;
         gbc.gridy = 5;
         gbc.gridwidth = 1;
         panelForm.add(lblDireccion, gbc);
-        
-        txtDireccion = new JTextField(30);
+          txtDireccion = new JTextField(40); // Aumentando el tamaño
+        // Configurar para texto en mayúsculas
+        txtDireccion.setDocument(new DocumentoMayusculas());
+        txtDireccion.setFont(new Font("Arial", Font.PLAIN, 14)); // Letra más grande
         gbc.gridx = 1;
         gbc.gridy = 5;
         gbc.gridwidth = 2;
         panelForm.add(txtDireccion, gbc);
-        
-        // Teléfono
+          // Teléfono
         JLabel lblTelefono = new JLabel("Teléfono:");
+        lblTelefono.setFont(new Font("Arial", Font.BOLD, 14)); // Etiqueta con letra más grande
         gbc.gridx = 0;
         gbc.gridy = 6;
         gbc.gridwidth = 1;
@@ -282,44 +287,46 @@ public class NuevoSocioPanelIntegrado extends JPanel {
         } catch (ParseException e) {
             e.printStackTrace();
         }
-        
-        txtTelefono = new JFormattedTextField(formatoTelefono);
+          txtTelefono = new JFormattedTextField(formatoTelefono);
+        txtTelefono.setFont(new Font("Arial", Font.PLAIN, 14)); // Letra más grande
         gbc.gridx = 1;
         gbc.gridy = 6;
         gbc.gridwidth = 2;
         panelForm.add(txtTelefono, gbc);
-        
-        // Población
+          // Población
         JLabel lblPoblacion = new JLabel("Población:");
+        lblPoblacion.setFont(new Font("Arial", Font.BOLD, 14)); // Etiqueta con letra más grande
         gbc.gridx = 0;
         gbc.gridy = 7;
         gbc.gridwidth = 1;
         panelForm.add(lblPoblacion, gbc);
-        
-        txtPoblacion = new JTextField(20);
+          txtPoblacion = new JTextField(30); // Aumentando el tamaño
+        // Configurar para texto en mayúsculas
+        txtPoblacion.setDocument(new DocumentoMayusculas());
+        txtPoblacion.setFont(new Font("Arial", Font.PLAIN, 14)); // Letra más grande
         gbc.gridx = 1;
         gbc.gridy = 7;
         gbc.gridwidth = 2;
         panelForm.add(txtPoblacion, gbc);
-        
-        // Presentado por
+          // Presentado por
         JLabel lblPresentadoPor = new JLabel("Presentado por socio N°:");
+        lblPresentadoPor.setFont(new Font("Arial", Font.BOLD, 14)); // Etiqueta con letra más grande
         gbc.gridx = 0;
         gbc.gridy = 8;
         gbc.gridwidth = 1;
         panelForm.add(lblPresentadoPor, gbc);
-        
-        txtPresentadoPor = new JTextField(10);
+          txtPresentadoPor = new JTextField(15); // Aumentando el tamaño
+        txtPresentadoPor.setFont(new Font("Arial", Font.PLAIN, 14)); // Letra más grande
         gbc.gridx = 1;
         gbc.gridy = 8;
         gbc.gridwidth = 2;
         panelForm.add(txtPresentadoPor, gbc);
-        
-        // Panel de botones
-        JPanel panelBotones = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
+          // Panel de botones
+        JPanel panelBotones = new JPanel(new FlowLayout(FlowLayout.CENTER, 25, 15)); // Aumentar espacio entre botones
         
         JButton btnGuardar = new JButton("Guardar");
-        btnGuardar.setPreferredSize(new Dimension(120, 30));
+        btnGuardar.setFont(new Font("Arial", Font.BOLD, 14)); // Letra más grande
+        btnGuardar.setPreferredSize(new Dimension(140, 40)); // Botón más grande
         btnGuardar.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -327,9 +334,9 @@ public class NuevoSocioPanelIntegrado extends JPanel {
             }
         });
         panelBotones.add(btnGuardar);
-        
-        JButton btnLimpiar = new JButton("Limpiar");
-        btnLimpiar.setPreferredSize(new Dimension(120, 30));
+          JButton btnLimpiar = new JButton("Limpiar");
+        btnLimpiar.setFont(new Font("Arial", Font.BOLD, 14)); // Letra más grande
+        btnLimpiar.setPreferredSize(new Dimension(140, 40)); // Botón más grande
         btnLimpiar.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -337,9 +344,9 @@ public class NuevoSocioPanelIntegrado extends JPanel {
             }
         });
         panelBotones.add(btnLimpiar);
-        
-        JButton btnCancelar = new JButton("Cancelar");
-        btnCancelar.setPreferredSize(new Dimension(120, 30));
+          JButton btnCancelar = new JButton("Cancelar");
+        btnCancelar.setFont(new Font("Arial", Font.BOLD, 14)); // Letra más grande
+        btnCancelar.setPreferredSize(new Dimension(140, 40)); // Botón más grande
         btnCancelar.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -348,16 +355,26 @@ public class NuevoSocioPanelIntegrado extends JPanel {
         });
         panelBotones.add(btnCancelar);
           // Crear panel de información para campos obligatorios
-        JPanel panelInfo = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        JLabel lblCamposObligatorios = new JLabel("* Los campos marcados con asterisco son obligatorios");
-        lblCamposObligatorios.setFont(new Font("Arial", Font.ITALIC, 11));
+        JPanel panelInfo = new JPanel(new FlowLayout(FlowLayout.LEFT));        JLabel lblCamposObligatorios = new JLabel("* Los campos marcados con asterisco son obligatorios");
+        lblCamposObligatorios.setFont(new Font("Arial", Font.ITALIC, 12));
         lblCamposObligatorios.setForeground(Color.RED);
         panelInfo.add(lblCamposObligatorios);
         
-        // Panel que combina el formulario y la información
+        // Añadir mensaje sobre la conversión automática a mayúsculas
+        JPanel panelInfoMayusculas = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        JLabel lblMayusculas = new JLabel("NOTA: El texto que ingrese será convertido automáticamente a MAYÚSCULAS.");
+        lblMayusculas.setFont(new Font("Arial", Font.ITALIC, 12));
+        lblMayusculas.setForeground(new Color(0, 100, 0)); // Verde oscuro
+        panelInfoMayusculas.add(lblMayusculas);
+        
+        // Panel que contiene ambos mensajes informativos
+        JPanel panelInfoCompleto = new JPanel(new GridLayout(2, 1));
+        panelInfoCompleto.add(panelInfo);
+        panelInfoCompleto.add(panelInfoMayusculas);
+          // Panel que combina el formulario y la información
         JPanel panelCentral = new JPanel(new BorderLayout());
         panelCentral.add(panelForm, BorderLayout.CENTER);
-        panelCentral.add(panelInfo, BorderLayout.SOUTH);
+        panelCentral.add(panelInfoCompleto, BorderLayout.SOUTH);
         
         // Añadir paneles al panel principal
         add(panelTitulo, BorderLayout.NORTH);
@@ -637,5 +654,19 @@ public class NuevoSocioPanelIntegrado extends JPanel {
         aplicarEstiloCamposObligatorios();
         
         txtNombres.requestFocus();
+    }
+    
+    /**
+     * Clase para crear un documento que automáticamente convierte el texto a mayúsculas
+     */
+    private class DocumentoMayusculas extends javax.swing.text.PlainDocument {
+        @Override
+        public void insertString(int offs, String str, javax.swing.text.AttributeSet a) throws javax.swing.text.BadLocationException {
+            if (str == null) {
+                return;
+            }
+            // Convertir a mayúsculas antes de insertar
+            super.insertString(offs, str.toUpperCase(), a);
+        }
     }
 }
