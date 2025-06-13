@@ -11,6 +11,8 @@ import connection.Conexion;
  */
 public class SocioDAO {
     
+    private static final double TASA_INTERES_PRESTAMO = 0.04; // 1% - tasa mensual de interés para préstamos
+    
     private Conexion conexion; // Objeto de conexión a la base de datos
     
     // Constructor de la clase SocioDAO
@@ -892,13 +894,14 @@ public class SocioDAO {
      * @param interesDeuda Interés pagado por deuda
      * @param interesCalculado Interés calculado total (puede ser mayor que interesDeuda)
      * @return ID del movimiento registrado, o -1 si ocurrió un error
-     */
-    public int registrarMovimientoSocio(
+     */    public int registrarMovimientoSocio(
             int noSocio, boolean esInfantil,
             double aportacionDeposito, double aportacionRetiro,
             double prestamoDeposito, double prestamoRetiro,
             double ahorroDeposito, double ahorroRetiro,
-            double interesDeuda, double interesCalculado) {          String tipoSocio = esInfantil ? "INFANTIL" : "ADULTO";
+            double interesDeuda, double interesCalculado) {
+        
+        String tipoSocio = esInfantil ? "INFANTIL" : "ADULTO";
         System.out.println("Registrando movimiento para socio #" + noSocio + ", tipo: " + tipoSocio);
         System.out.println("Valores: AportDeposito=" + aportacionDeposito + 
             ", AportRetiro=" + aportacionRetiro +
@@ -912,7 +915,8 @@ public class SocioDAO {
         
         try {
             // Primero obtenemos los saldos actuales
-            Map<String, Object> datosActuales = obtenerDatosFinancierosSocio(noSocio, esInfantil);            if (datosActuales == null) {
+            Map<String, Object> datosActuales = obtenerDatosFinancierosSocio(noSocio, esInfantil);
+            if (datosActuales == null) {
                 System.err.println("No se pudieron obtener los datos financieros actuales del socio #" + noSocio);
                 return -1;
             }
@@ -942,7 +946,7 @@ public class SocioDAO {
                 ", PresEgresos=" + prestamoRetiro +
                 ", PresIngresos=" + prestamoDeposito +
                 ", PresSaldo=" + nuevoSaldoPrestamos +
-                ", Intereses=" + interesCalculado +
+                ", Intereses=" + interesDeuda +
                 ", AhoIngresos=" + ahorroDeposito +
                 ", AhoEgresos=" + ahorroRetiro +
                 ", AhoSaldo=" + nuevoSaldoAhorros);
@@ -951,9 +955,11 @@ public class SocioDAO {
                 consultaMovimiento, 
                 java.sql.Statement.RETURN_GENERATED_KEYS // Para obtener el ID generado
             );
+            
+            // 1. NoSocio
             stmtMovimiento.setInt(1, noSocio);
             
-            // Crear fecha sin tiempo (solo con año, mes y día)
+            // 2. Fecha - Crear fecha sin tiempo (solo con año, mes y día)
             java.util.Calendar cal = java.util.Calendar.getInstance();
             cal.set(java.util.Calendar.HOUR_OF_DAY, 0);
             cal.set(java.util.Calendar.MINUTE, 0);
@@ -961,23 +967,56 @@ public class SocioDAO {
             cal.set(java.util.Calendar.MILLISECOND, 0);
             stmtMovimiento.setDate(2, new java.sql.Date(cal.getTimeInMillis()));
             
-            stmtMovimiento.setDouble(3, aportacionDeposito);  // AporIngresos
-            stmtMovimiento.setDouble(4, aportacionRetiro);    // AporEgresos
-            stmtMovimiento.setDouble(5, nuevoSaldoAportaciones); // AporSaldo
-            stmtMovimiento.setDouble(6, prestamoRetiro);      // PresEgresos (retiro = egreso)
-            stmtMovimiento.setDouble(7, prestamoDeposito);    // PresIngresos (depósito = ingreso)
-            stmtMovimiento.setDouble(8, nuevoSaldoPrestamos); // PresSaldo
-            stmtMovimiento.setDouble(9, interesCalculado);    // Intereses calculados
-            stmtMovimiento.setDouble(10, ahorroDeposito);     // AhoIngresos
-            stmtMovimiento.setDouble(11, ahorroRetiro);       // AhoEgresos
-            stmtMovimiento.setDouble(12, nuevoSaldoAhorros);  // AhoSaldo
-            stmtMovimiento.setString(13, tipoSocio);          // TipoSocio
-            stmtMovimiento.setDouble(14, interesDeuda);       // RetInteres
-            stmtMovimiento.setDouble(15, 0);                  // SaldoBanco
-            stmtMovimiento.setDouble(16, 0);                  // RetBanco
-            stmtMovimiento.setDouble(17, 0);                  // IngOtros
-            stmtMovimiento.setDouble(18, 0);                  // EgrOtros
-            stmtMovimiento.setDouble(19, 0);                  // GastosAdmon
+            // 3. AporIngresos
+            stmtMovimiento.setDouble(3, aportacionDeposito);
+            
+            // 4. AporEgresos
+            stmtMovimiento.setDouble(4, aportacionRetiro);
+            
+            // 5. AporSaldo
+            stmtMovimiento.setDouble(5, nuevoSaldoAportaciones);
+            
+            // 6. PresEgresos (retiro = egreso)
+            stmtMovimiento.setDouble(6, prestamoRetiro);
+            
+            // 7. PresIngresos (depósito = ingreso)
+            stmtMovimiento.setDouble(7, prestamoDeposito);
+            
+            // 8. PresSaldo
+            stmtMovimiento.setDouble(8, nuevoSaldoPrestamos);
+            
+            // 9. Intereses (el interés que se está pagando)
+            stmtMovimiento.setDouble(9, interesDeuda);
+            
+            // 10. AhoIngresos
+            stmtMovimiento.setDouble(10, ahorroDeposito);
+            
+            // 11. AhoEgresos
+            stmtMovimiento.setDouble(11, ahorroRetiro);
+            
+            // 12. AhoSaldo
+            stmtMovimiento.setDouble(12, nuevoSaldoAhorros);
+            
+            // 13. TipoSocio
+            stmtMovimiento.setString(13, tipoSocio);
+            
+            // 14. RetInteres (solo para retiros de intereses)
+            stmtMovimiento.setDouble(14, 0);
+            
+            // 15. SaldoBanco
+            stmtMovimiento.setDouble(15, 0);
+            
+            // 16. RetBanco
+            stmtMovimiento.setDouble(16, 0);
+            
+            // 17. IngOtros
+            stmtMovimiento.setDouble(17, 0);
+            
+            // 18. EgrOtros
+            stmtMovimiento.setDouble(18, 0);
+            
+            // 19. GastosAdmon
+            stmtMovimiento.setDouble(19, 0);
             
             System.out.println("Los 19 parámetros han sido configurados correctamente. Ejecutando la instrucción...");
             int filasAfectadas = stmtMovimiento.executeUpdate();
@@ -995,7 +1034,8 @@ public class SocioDAO {
             stmtMovimiento.close();
             
             System.out.println("Movimiento registrado correctamente. ID: " + idMovimientoNuevo);
-            return idMovimientoNuevo;            } catch (SQLException e) {
+            return idMovimientoNuevo;
+        } catch (SQLException e) {
             System.err.println("Error al registrar movimiento: " + e.getMessage());
             System.err.println("Código de error SQL: " + e.getErrorCode());
             System.err.println("Estado SQL: " + e.getSQLState());
@@ -1520,13 +1560,26 @@ public class SocioDAO {
      * @param interesDeuda Nuevo interés pagado por deuda
      * @param interesCalculado Interés calculado total (puede ser mayor que interesDeuda)
      * @return true si la actualización fue exitosa, false en caso contrario
+     */    /**
+     * Actualiza un movimiento existente en la base de datos
+     * @param idMovimiento ID del movimiento a actualizar
+     * @param noSocio ID del socio al que pertenece el movimiento
+     * @param aportacionDeposito Monto de depósito en aportaciones
+     * @param aportacionRetiro Monto de retiro en aportaciones
+     * @param prestamoDeposito Monto de depósito en préstamos
+     * @param prestamoRetiro Monto de retiro en préstamos
+     * @param ahorroDeposito Monto de depósito en ahorros
+     * @param ahorroRetiro Monto de retiro en ahorros
+     * @param interesDeuda Monto de interés de deuda
+     * @return true si la actualización fue exitosa, false en caso contrario
      */
     public boolean actualizarMovimiento(
             int idMovimiento,
+            int noSocio,
             double aportacionDeposito, double aportacionRetiro,
             double prestamoDeposito, double prestamoRetiro,
             double ahorroDeposito, double ahorroRetiro,
-            double interesDeuda, double interesCalculado) {
+            double interesDeuda) {
         
         try {
             // Primero obtenemos el movimiento actual
@@ -1535,7 +1588,17 @@ public class SocioDAO {
             if (movimientoActual == null) {
                 System.err.println("No se encontró el movimiento con ID: " + idMovimiento);
                 return false;
-            }              int noSocio = (int) movimientoActual.get("NoSocio");
+            }
+            
+            // Verificar que el socio coincida con el del movimiento
+            int socioDelMovimiento = (int) movimientoActual.get("NoSocio");
+            if (socioDelMovimiento != noSocio) {
+                System.err.println("El socio del movimiento (" + socioDelMovimiento + 
+                    ") no coincide con el socio proporcionado (" + noSocio + ")");
+                return false;
+            }
+
+
             String tipoSocioStr = (String) movimientoActual.get("TipoSocio");
             boolean esInfantil = "INFANTIL".equals(tipoSocioStr);
             
@@ -1547,8 +1610,7 @@ public class SocioDAO {
                 ", PrestRetiro=" + prestamoRetiro +
                 ", AhorroDeposito=" + ahorroDeposito + 
                 ", AhorroRetiro=" + ahorroRetiro +
-                ", InteresDeuda=" + interesDeuda + 
-                ", InteresCalculado=" + interesCalculado);
+                ", InteresDeuda=" + interesDeuda);
             
             // Obtenemos los valores anteriores para poder calcular las diferencias
             double aportacionDepositoAnterior = (double) movimientoActual.get("AporIngresos");
@@ -1607,7 +1669,9 @@ public class SocioDAO {
             statement.setDouble(3, prestamoDeposito);
             statement.setDouble(4, prestamoRetiro);
             statement.setDouble(5, ahorroDeposito);
-            statement.setDouble(6, ahorroRetiro);
+            statement.setDouble(6, ahorroRetiro);            // Calculamos el interés actual basado en el saldo de préstamos
+            double interesCalculado = prestamoSaldoActual * TASA_INTERES_PRESTAMO;
+            
             statement.setDouble(7, interesDeuda);
             statement.setDouble(8, interesCalculado);
             statement.setDouble(9, aportacionSaldoActual);
@@ -1644,5 +1708,310 @@ public class SocioDAO {
             e.printStackTrace();
             return false;
         }
+    }
+    
+    /**
+     * Obtiene la lista de socios con intereses pendientes altos
+     * @param montoMinimo El monto mínimo para considerar el interés pendiente como alto
+     * @return Lista de socios con intereses pendientes altos
+     */
+    public List<Map<String, Object>> obtenerSociosConInteresesPendientesAltos(double montoMinimo) {
+        List<Map<String, Object>> sociosConInteresesAltos = new ArrayList<>();
+        
+        try {
+            // Consultar todos los socios
+            String consulta = "SELECT s.NoSocio, s.Nombres, s.Apellidos FROM Socios s " +
+                              "INNER JOIN MovimientoSocios m ON s.NoSocio = m.NoSocio " +
+                              "WHERE m.InteresesPendientes > ? " +
+                              "GROUP BY s.NoSocio, s.Nombres, s.Apellidos " +
+                              "ORDER BY m.InteresesPendientes DESC";
+            
+            PreparedStatement pstmt = conexion.getConexion().prepareStatement(consulta);
+            pstmt.setDouble(1, montoMinimo);
+            ResultSet rs = pstmt.executeQuery();
+            
+            while (rs.next()) {
+                int idSocio = rs.getInt("NoSocio");
+                
+                // Para cada socio, obtener sus datos financieros actualizados
+                Map<String, Object> datosFinancieros = obtenerDatosFinancierosSocio(idSocio, false);
+                
+                // Si tiene intereses pendientes altos, añadirlo a la lista
+                double interesPendiente = 0.0;
+                if (datosFinancieros != null) {                    if (datosFinancieros.containsKey("InteresesPendientes")) {
+                        Object valor = datosFinancieros.get("InteresesPendientes");
+                        if (valor != null) {
+                            try {
+                                if (valor instanceof Double) {
+                                    interesPendiente = (Double) valor;
+                                } else if (valor instanceof Number) {
+                                    interesPendiente = ((Number) valor).doubleValue();
+                                } else if (valor instanceof String) {
+                                    // Limpiar posibles caracteres no numéricos
+                                    String cleanValue = ((String) valor).replaceAll("[^\\d.-]", "");
+                                    if (!cleanValue.isEmpty()) {
+                                        interesPendiente = Double.parseDouble(cleanValue);
+                                    }
+                                } else {
+                                    // Para cualquier otro tipo, intentar convertir su representación en texto
+                                    interesPendiente = Double.parseDouble(valor.toString().replaceAll("[^\\d.-]", ""));
+                                }
+                            } catch (NumberFormatException | NullPointerException e) {
+                                System.err.println("Error al convertir InteresesPendientes '" + valor + "' para socio " + idSocio + ": " + e.getMessage());
+                            }
+                        }
+                    }
+                    
+                    // Si no se encontró en el registro, calcular desde el historial
+                    if (interesPendiente == 0.0) {
+                        interesPendiente = calcularInteresesPendientesAcumulados(idSocio, datosFinancieros);
+                    }
+                    
+                    // Si el monto supera el límite, añadir a la lista
+                    if (interesPendiente >= montoMinimo) {
+                        Map<String, Object> socio = new HashMap<>();
+                        socio.put("ID", idSocio);
+                        socio.put("Nombres", rs.getString("Nombres"));
+                        socio.put("Apellidos", rs.getString("Apellidos"));
+                        socio.put("InteresesPendientes", interesPendiente);
+                        
+                        sociosConInteresesAltos.add(socio);
+                    }
+                }
+            }
+            
+            rs.close();
+            pstmt.close();
+            
+        } catch (SQLException e) {
+            System.err.println("Error al obtener socios con intereses pendientes: " + e.getMessage());
+            e.printStackTrace();
+        }
+        
+        return sociosConInteresesAltos;
+    }
+    
+    /**
+     * Calcula los intereses pendientes acumulados a partir del histórico de movimientos
+     * @param idSocio ID del socio
+     * @param datosFinancieros Mapa con los datos financieros del socio (si ya están disponibles)
+     * @return Monto total de intereses pendientes
+     */
+    public double calcularInteresesPendientesAcumulados(int idSocio, Map<String, Object> datosFinancieros) {
+        double totalInteresesPendientes = 0.0;
+        
+        try {
+            // Si no se pasaron datos financieros, obtenerlos
+            if (datosFinancieros == null) {
+                datosFinancieros = obtenerDatosFinancierosSocio(idSocio, false);
+            }
+            
+            // Verificar que existan movimientos
+            if (datosFinancieros == null || !datosFinancieros.containsKey("Movimientos")) {
+                return totalInteresesPendientes;
+            }
+              // Se usa SuppressWarnings ya que sabemos que la estructura es correcta
+            @SuppressWarnings("unchecked")
+            List<Map<String, Object>> movimientos = (List<Map<String, Object>>) datosFinancieros.get("Movimientos");
+            if (movimientos == null || movimientos.isEmpty()) {
+                return totalInteresesPendientes;
+            }
+            
+            // Recorrer los movimientos y acumular los intereses que no fueron pagados
+            for (Map<String, Object> movimiento : movimientos) {                double intereses = getDoubleValue(movimiento, "Intereses");
+                double interesesPagados = getDoubleValue(movimiento, "InteresesPagados");
+                
+                try {
+                    // Acumular la diferencia entre intereses generados y pagados
+                    double interesesPendientes = intereses - interesesPagados;
+                    if (interesesPendientes > 0) {
+                        totalInteresesPendientes += interesesPendientes;
+                    }
+                } catch (Exception e) {
+                    System.err.println("Error al calcular intereses pendientes para un movimiento: " + e.getMessage());
+                    System.err.println("Intereses: " + intereses + ", Pagados: " + interesesPagados);
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Error al calcular intereses pendientes acumulados: " + e.getMessage());
+            e.printStackTrace();
+        }
+        
+        return totalInteresesPendientes;
+    }
+    
+    /**
+     * Obtiene un valor double de un mapa, manejando valores nulos
+     * @param map Mapa de datos
+     * @param key Clave a buscar
+     * @return Valor como double (0.0 si no existe o es null)
+     */    private double getDoubleValue(Map<String, Object> map, String key) {
+        if (map == null || !map.containsKey(key) || map.get(key) == null) {
+            return 0.0;
+        }
+        
+        Object value = map.get(key);
+        try {
+            if (value instanceof Double) {
+                return (Double) value;
+            } else if (value instanceof Number) {
+                return ((Number) value).doubleValue();
+            } else if (value instanceof String) {
+                // Limpiar posibles caracteres no numéricos (como "$" o ",")
+                String cleanValue = ((String) value).replaceAll("[^\\d.-]", "");
+                if (!cleanValue.isEmpty()) {
+                    return Double.parseDouble(cleanValue);
+                }
+            } else if (value != null) {
+                // Para cualquier otro tipo, intentar convertir su representación en texto
+                String stringValue = value.toString().replaceAll("[^\\d.-]", "");
+                if (!stringValue.isEmpty()) {
+                    return Double.parseDouble(stringValue);
+                }
+            }
+        } catch (NumberFormatException | NullPointerException e) {
+            System.err.println("Error al convertir valor '" + value + "' para la clave '" + key + "': " + e.getMessage());
+        }
+        return 0.0;
+    }
+    
+    /**
+     * Obtiene los intereses generados en un año específico para un socio
+     * @param idSocio ID del socio
+     * @param año El año para el cual se desean obtener los intereses
+     * @return La suma de intereses generados en ese año
+     */    public double obtenerInteresesPorAño(int idSocio, int año) {
+        double totalIntereses = 0.0;
+        double totalRetirosIntereses = 0.0;
+        
+        try {
+            // Consulta SQL para obtener la suma de intereses del año especificado
+            String consultaIntereses = "SELECT SUM(Intereses) as TotalIntereses FROM MovimientosSocio " +
+                             "WHERE NoSocio = ? AND YEAR(Fecha) = ?";
+            
+            PreparedStatement statementIntereses = conexion.getConexion().prepareStatement(consultaIntereses);
+            statementIntereses.setInt(1, idSocio);
+            statementIntereses.setInt(2, año);
+            
+            ResultSet resultadoIntereses = statementIntereses.executeQuery();
+            
+            if (resultadoIntereses.next()) {
+                totalIntereses = resultadoIntereses.getDouble("TotalIntereses");
+                if (resultadoIntereses.wasNull()) {
+                    totalIntereses = 0.0;
+                }
+            }
+            
+            resultadoIntereses.close();
+            statementIntereses.close();
+            
+            // Obtener retiros de intereses realizados en el mismo año para el mismo socio
+            String consultaRetiros = "SELECT SUM(RetInteres) as TotalRetiros FROM MovimientosSocio " +
+                                    "WHERE NoSocio = ? AND YEAR(Fecha) = ? AND RetInteres > 0";
+            
+            PreparedStatement statementRetiros = conexion.getConexion().prepareStatement(consultaRetiros);
+            statementRetiros.setInt(1, idSocio);
+            statementRetiros.setInt(2, año);
+            
+            ResultSet resultadoRetiros = statementRetiros.executeQuery();
+            
+            if (resultadoRetiros.next()) {
+                totalRetirosIntereses = resultadoRetiros.getDouble("TotalRetiros");
+                if (resultadoRetiros.wasNull()) {
+                    totalRetirosIntereses = 0.0;
+                }
+            }
+            
+            resultadoRetiros.close();
+            statementRetiros.close();
+            
+            // El disponible es la diferencia entre lo generado y lo retirado
+            double interesesDisponibles = totalIntereses - totalRetirosIntereses;
+            if (interesesDisponibles < 0) interesesDisponibles = 0;
+            
+            return interesesDisponibles;
+            
+        } catch (SQLException e) {
+            System.err.println("Error al obtener intereses por año: " + e.getMessage());
+            e.printStackTrace();
+        }
+        
+        return totalIntereses;
+    }
+    
+    /**
+     * Registra un retiro de intereses
+     * @param movimiento Mapa con los datos del movimiento
+     * @return true si el registro fue exitoso, false en caso contrario
+     */    public boolean registrarRetiroIntereses(Map<String, Object> movimiento) {
+        boolean exito = false;
+        
+        try {
+            // Iniciar la transacción
+            conexion.getConexion().setAutoCommit(false);
+            
+            // Obtener los valores del mapa
+            int idSocio = (int) movimiento.get("IdSocio");
+            double montoRetiro = (double) movimiento.get("RetInteres");
+            java.util.Date fecha = (java.util.Date) movimiento.get("Fecha");
+            boolean esInfantil = (boolean) movimiento.get("EsInfantil");
+            // Comentario: El año de interés está disponible en el mapa como "AñoInteres" si es necesario usarlo en el futuro
+            
+            // Preparar la consulta SQL para insertar el movimiento
+            String consulta = "INSERT INTO MovimientosSocio (NoSocio, Fecha, AporIngresos, AporEgresos, " +
+                "AporSaldo, PresIngresos, PresEgresos, PresSaldo, AhoIngresos, AhoEgresos, AhoSaldo, " +
+                "Intereses, RetInteres, SaldoBanco, RetBanco, IngOtros, EgrOtros, GastosAdmon, TipoSocio) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+            PreparedStatement statement = conexion.getConexion().prepareStatement(consulta);
+            
+            statement.setInt(1, idSocio);                 // NoSocio
+            statement.setDate(2, new java.sql.Date(fecha.getTime()));  // Fecha
+            statement.setDouble(3, 0.0);                  // AporIngresos
+            statement.setDouble(4, 0.0);                  // AporEgresos
+            statement.setDouble(5, 0.0);                  // AporSaldo
+            statement.setDouble(6, 0.0);                  // PresIngresos
+            statement.setDouble(7, 0.0);                  // PresEgresos
+            statement.setDouble(8, 0.0);                  // PresSaldo
+            statement.setDouble(9, 0.0);                  // AhoIngresos
+            statement.setDouble(10, 0.0);                 // AhoEgresos
+            statement.setDouble(11, 0.0);                 // AhoSaldo
+            statement.setDouble(12, 0.0);                 // Intereses
+            statement.setDouble(13, montoRetiro);         // RetInteres
+            statement.setDouble(14, 0.0);                 // SaldoBanco
+            statement.setDouble(15, 0.0);                 // RetBanco
+            statement.setDouble(16, 0.0);                 // IngOtros
+            statement.setDouble(17, 0.0);                 // EgrOtros
+            statement.setDouble(18, 0.0);                 // GastosAdmon
+            statement.setString(19, esInfantil ? "INFANTE" : "ADULTO"); // TipoSocio
+            
+            int filasAfectadas = statement.executeUpdate();
+            
+            if (filasAfectadas > 0) {
+                // Si la operación fue exitosa, confirmar la transacción
+                conexion.getConexion().commit();
+                exito = true;
+            } else {
+                // Si no se insertó ninguna fila, hacer rollback
+                conexion.getConexion().rollback();
+            }
+            
+            statement.close();
+            conexion.getConexion().setAutoCommit(true);
+            
+        } catch (SQLException e) {
+            try {
+                // En caso de error, hacer rollback
+                conexion.getConexion().rollback();
+                conexion.getConexion().setAutoCommit(true);
+            } catch (SQLException ex) {
+                System.err.println("Error al hacer rollback: " + ex.getMessage());
+                ex.printStackTrace();
+            }
+            System.err.println("Error al registrar retiro de intereses: " + e.getMessage());
+            e.printStackTrace();
+        }
+        
+        return exito;
     }
 }

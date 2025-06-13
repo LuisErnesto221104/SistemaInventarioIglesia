@@ -1562,19 +1562,28 @@ public class MovimientoSocioPanelIntegradoMejorado extends JPanel {
         
         // Formato para fechas y montos
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
-        DecimalFormat df = new DecimalFormat("$#,##0.00");
-          // Añadir todas las filas a la tabla (sin limitar a 5 movimientos)
-        for (Map<String, Object> movimiento : movimientos) {            Date fecha = (Date) movimiento.get("Fecha");
-              // Obtener el ID del movimiento (intentar IdMov primero, luego ID)
+        DecimalFormat df = new DecimalFormat("$#,##0.00");        // Añadir todas las filas a la tabla (sin limitar a 5 movimientos)
+        for (Map<String, Object> movimiento : movimientos) {
+            // Verificar y obtener la fecha del movimiento
+            Date fecha = (Date) movimiento.get("Fecha");
+            
+            // Obtener el ID del movimiento (intentar IdMov primero, luego ID)
             Object idMovimiento = movimiento.get("IdMov");
             if (idMovimiento == null) {
                 idMovimiento = movimiento.get("ID");
                 System.out.println("Usando ID alternativo: " + idMovimiento);
             }
-              // Si se encontró, agregar a la tabla
+            
+            // Si se encontró, agregar a la tabla
             if (idMovimiento != null) {
-                // Formatear la fecha completa
-                String fechaFormateada = sdf.format(fecha);
+                // Formatear la fecha completa (o proporcionar un valor por defecto si es nula)
+                String fechaFormateada;
+                if (fecha != null) {
+                    fechaFormateada = sdf.format(fecha);
+                } else {
+                    fechaFormateada = "Sin fecha";
+                    System.out.println("Movimiento ID " + idMovimiento + " sin fecha, usando valor por defecto");
+                }
                 
                 // Calcular los valores para cada categoría
                 double aporIngresos = getDoubleValue(movimiento, "AporIngresos");
@@ -1865,13 +1874,18 @@ public class MovimientoSocioPanelIntegradoMejorado extends JPanel {
         int nuevoMovimientoId = 0;
         
         if (esSocioAdulto) {
-            // Para socios adultos, registrar todos los campos
+            // Para socios adultos, registrar todos los campos            // Recalcular interés para registrarlo correctamente
+            double interesCalculado = saldoPrestamos * TASA_INTERES_PRESTAMO;
+            if (cboSemanasInteres.isVisible() && cboSemanasInteres.getSelectedItem() != null) {
+                interesCalculado *= ((Integer) cboSemanasInteres.getSelectedItem()).intValue();
+            }
+            
             nuevoMovimientoId = socioDAO.registrarMovimientoSocio(
                 socioActualId, !esSocioAdulto,
                 aportacionDeposito, aportacionRetiro,
                 prestamoDeposito, prestamoRetiro,
                 ahorroDeposito, ahorroRetiro,
-                interesDeuda, nuevoMovimientoId
+                interesDeuda, interesCalculado
             );
             exito = (nuevoMovimientoId > 0);
         } else {
@@ -1910,13 +1924,21 @@ public class MovimientoSocioPanelIntegradoMejorado extends JPanel {
         lblSaldoAportaciones.setForeground(Color.BLACK);
         lblSaldoPrestamos.setForeground(Color.BLACK);
         lblSaldoAhorros.setForeground(Color.BLACK);
-        
-        // Recalcular intereses de préstamo
+          // Recalcular intereses de préstamo
         double interesCalculado = saldoPrestamos * TASA_INTERES_PRESTAMO;
         lblInteresCalculado.setText(df.format(interesCalculado));
-        txtInteresDeuda.setValue(interesCalculado);          // Añadir el movimiento a la tabla
+        txtInteresDeuda.setValue(interesCalculado);            // Añadir el movimiento a la tabla
+        // Usamos fecha sin hora para mostrar consistentemente con lo que se guarda en la BD
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
-        Date fechaActual = new Date();
+        
+        // Crear una fecha sin componente de hora
+        Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.HOUR_OF_DAY, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+        Date fechaActual = cal.getTime();
+        
         String fechaFormateada = sdf.format(fechaActual);
         
         Object[] fila = new Object[] {
@@ -2505,6 +2527,9 @@ public class MovimientoSocioPanelIntegradoMejorado extends JPanel {
     /**
      * Test method to validate movement IDs
      * Verifies that all movements in the table have valid IDs
+     */    /**
+     * Test method to validate movement IDs
+     * Verifies that all movements in the table have valid IDs
      */
     private void testMovimientoIDs() {
         int totalRows = tablaMovimientos.getRowCount();
@@ -2514,8 +2539,9 @@ public class MovimientoSocioPanelIntegradoMejorado extends JPanel {
         
         message.append("Total de filas en la tabla: ").append(totalRows).append("\n\n");
         
+        // El ID del movimiento está en la columna 11 (última columna)
         for (int i = 0; i < totalRows; i++) {
-            Object idObj = tablaMovimientos.getValueAt(i, 6);
+            Object idObj = tablaMovimientos.getValueAt(i, 11);
             Object fechaObj = tablaMovimientos.getValueAt(i, 0);
             
             if (idObj != null && !idObj.toString().isEmpty()) {

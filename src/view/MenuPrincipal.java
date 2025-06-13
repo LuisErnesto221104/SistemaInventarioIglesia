@@ -159,17 +159,27 @@ public class MenuPrincipal extends JFrame {
         // Menú Movimientos
         JMenu menuMovimientos = new JMenu("Movimientos");
         menuMovimientos.setMnemonic(KeyEvent.VK_H);
-        
-        JMenuItem itemDeposito = new JMenuItem("Movimiento de Socio", KeyEvent.VK_D);
+          JMenuItem itemDeposito = new JMenuItem("Movimiento de Socio", KeyEvent.VK_D);
         JMenuItem itemRetiro = new JMenuItem("Retiro de Intereses", KeyEvent.VK_R);
         JMenuItem itemDepositoBancario = new JMenuItem("Depositos Bancarios", KeyEvent.VK_M);
         JMenuItem itemRetiroDepositoBancario = new JMenuItem("Retiro de Deposito Bancario", KeyEvent.VK_C);
-        JMenuItem itemOtros = new JMenuItem("Otros Moviminetos(Ingresos, Egresos, Gastos)");        // Añadir acción al menú de movimiento de socio
+        JMenuItem itemOtros = new JMenuItem("Otros Moviminetos(Ingresos, Egresos, Gastos)");
+        
+        // Añadir acción al menú de movimiento de socio
         itemDeposito.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 JPanel panelMovimientoSocio = new MovimientoSocioPanelIntegradoMejorado(MenuPrincipal.this);
                 cambiarPanel(panelMovimientoSocio, "movimientoSocio");
+            }
+        });
+        
+        // Añadir acción al menú de retiro de intereses
+        itemRetiro.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JPanel panelRetiroIntereses = new RetiroInteresesPanel(MenuPrincipal.this);
+                cambiarPanel(panelRetiroIntereses, "retiroIntereses");
             }
         });
         
