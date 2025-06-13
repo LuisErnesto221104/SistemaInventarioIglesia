@@ -81,22 +81,22 @@ El sistema utiliza una base de datos Access (dbcaja.mdb) con las siguientes tabl
 - **Usuarios**: Credenciales de acceso al sistema.
 
 # Sus tablas con campos son:
--**Ahorro**: IdAho	NoSocio	Cantidad	Fecha
--**AhorroInfa**:Idsocain	NoSocio	Fecha	Cantidad
--**Cancelaciones**:Idcanc	NoSocio	Descripcion	Cantidad	Fecha
--**Deposito**:Iddeps	NoSocio	Cantidad
--**DepPrestamo**:IdDepPre	NoSocio	Cantidad	Fecha	Intereses
--**EgreDeposito**:Idegrede	NoSocio	Cantidad	Fecha
--**IngreDeposito**:Idredep	NoSocio	Cantidad	Fecha
--**MovimientosSocios**: IdMov	NoSocio	Fecha	AporIngresos	AporEgresos	AporSaldo	PresEgresos	PresIngresos    PresSaldo	Intereses	AhoIngresos	AhoEgresos	AhoSaldo	TipoSocio	Nada	RetInteres	SaldoBanco	RetBanco	IngOtros	EgrOtros	GastosAdmon
--**MovimientosSociosTemporal**:Id	Defaul	NoSocio	Fecha	AporIngresos	AporEgresos	AporSaldo	PresEgresos	PresIngresos	PresSaldo	Intereses	RetInteres	AhoIngresos	AhoEgresos	AhoSaldo	TipoSocio	Nada	SaldoBanco	RetBanco	IngOtros	EgrOtros	GastosAdmon
--**Prac**:Idadas	No
--**IdPresSoc**:IdPresSoc	NoSocio	Cantidad	Fecha
--**Prestamo**:IdPre	NoSocio	Aval	Cantidad	Fecha	InteresActual
--**PrestamoFechaT**:Id34d	NoSocio	Fecha
--**RegPrestamo**:IdRegPre	NoSocio	Aval	Cantidad	Avalado	Fecha
--**ReporteEgresos**:Idrepegre	Fecha	NoSocio	Retiro	Prestamo	Deposito	Utilerias	Descripcion	TIPO
--**SociosInfa**:Iddasdf	NoSocio	Fecha	Nombres	Apellidos	Direccion	Telefono	PresentadoPor
+- **Ahorro**: IdAho	NoSocio	Cantidad	Fecha
+- **AhorroInfa**:Idsocain	NoSocio	Fecha	Cantidad
+- **Cancelaciones**:Idcanc	NoSocio	Descripcion	Cantidad	Fecha
+- **Deposito**:Iddeps	NoSocio	Cantidad
+- **DepPrestamo**:IdDepPre	NoSocio	Cantidad	Fecha	Intereses
+- **EgreDeposito**:Idegrede	NoSocio	Cantidad	Fecha
+- **IngreDeposito**:Idredep	NoSocio	Cantidad	Fecha
+- **MovimientosSocios**: IdMov	NoSocio	Fecha	AporIngresos	AporEgresos	AporSaldo	PresEgresos	PresIngresos    PresSaldo	Intereses	AhoIngresos	AhoEgresos	AhoSaldo	TipoSocio	Nada	RetInteres	SaldoBanco	RetBanco	IngOtros	EgrOtros	GastosAdmon
+- **MovimientosSociosTemporal**:Id	Defaul	NoSocio	Fecha	AporIngresos	AporEgresos	AporSaldo	PresEgresos	PresIngresos	PresSaldo	Intereses	RetInteres	AhoIngresos	AhoEgresos	AhoSaldo	TipoSocio	Nada	SaldoBanco	RetBanco	IngOtros	EgrOtros	GastosAdmon
+- **Prac**:Idadas	No
+- **IdPresSoc**:IdPresSoc	NoSocio	Cantidad	Fecha
+- **Prestamo**:IdPre	NoSocio	Aval	Cantidad	Fecha	InteresActual
+- **PrestamoFechaT**:Id34d	NoSocio	Fecha
+- **RegPrestamo**:IdRegPre	NoSocio	Aval	Cantidad	Avalado	Fecha
+- **ReporteEgresos**:Idrepegre	Fecha	NoSocio	Retiro	Prestamo	Deposito	Utilerias	Descripcion	TIPO
+- **SociosInfa**:Iddasdf	NoSocio	Fecha	Nombres	Apellidos	Direccion	Telefono	PresentadoPor
 
 
 ## Requisitos Técnicos
