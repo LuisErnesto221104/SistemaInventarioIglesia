@@ -1558,7 +1558,6 @@ public class SocioDAO {
      * @param ahorroDeposito Nuevo monto depositado a ahorros
      * @param ahorroRetiro Nuevo monto retirado de ahorros
      * @param interesDeuda Nuevo interés pagado por deuda
-     * @param interesCalculado Interés calculado total (puede ser mayor que interesDeuda)
      * @return true si la actualización fue exitosa, false en caso contrario
      */    /**
      * Actualiza un movimiento existente en la base de datos
@@ -1957,61 +1956,119 @@ public class SocioDAO {
             boolean esInfantil = (boolean) movimiento.get("EsInfantil");
             // Comentario: El año de interés está disponible en el mapa como "AñoInteres" si es necesario usarlo en el futuro
             
-            // Preparar la consulta SQL para insertar el movimiento
-            String consulta = "INSERT INTO MovimientosSocio (NoSocio, Fecha, AporIngresos, AporEgresos, " +
-                "AporSaldo, PresIngresos, PresEgresos, PresSaldo, AhoIngresos, AhoEgresos, AhoSaldo, " +
-                "Intereses, RetInteres, SaldoBanco, RetBanco, IngOtros, EgrOtros, GastosAdmon, TipoSocio) " +
+            // Obtener los datos financieros actuales del socio
+            Map<String, Object> datosFinancieros = obtenerDatosFinancierosSocio(idSocio, esInfantil);
+            
+            if (datosFinancieros == null) {
+                System.err.println("No se pudieron obtener los datos financieros del socio #" + idSocio);
+                return false;
+            }
+            
+            double saldoAhorros = (Double) datosFinancieros.getOrDefault("AhoSaldo", 0.0);
+            
+            // El tipo de socio lo determina si es infantil o no
+            String tipoSocio = esInfantil ? "INFANTIL" : "ADULTO";
+            
+            // Crear el movimiento en la tabla MovimientosSocio
+            String consultaMovimiento = "INSERT INTO MovimientosSocio " +
+                "(NoSocio, Fecha, AporIngresos, AporEgresos, AporSaldo, PresEgresos, PresIngresos, " +
+                "PresSaldo, Intereses, AhoIngresos, AhoEgresos, AhoSaldo, TipoSocio, " +
+                "RetInteres, SaldoBanco, RetBanco, IngOtros, EgrOtros, GastosAdmon) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-            PreparedStatement statement = conexion.getConexion().prepareStatement(consulta);
+            PreparedStatement statement = conexion.getConexion().prepareStatement(consultaMovimiento);
             
             statement.setInt(1, idSocio);                 // NoSocio
             statement.setDate(2, new java.sql.Date(fecha.getTime()));  // Fecha
             statement.setDouble(3, 0.0);                  // AporIngresos
             statement.setDouble(4, 0.0);                  // AporEgresos
             statement.setDouble(5, 0.0);                  // AporSaldo
-            statement.setDouble(6, 0.0);                  // PresIngresos
-            statement.setDouble(7, 0.0);                  // PresEgresos
+            statement.setDouble(6, 0.0);                  // PresEgresos
+            statement.setDouble(7, 0.0);                  // PresIngresos
             statement.setDouble(8, 0.0);                  // PresSaldo
-            statement.setDouble(9, 0.0);                  // AhoIngresos
-            statement.setDouble(10, 0.0);                 // AhoEgresos
-            statement.setDouble(11, 0.0);                 // AhoSaldo
-            statement.setDouble(12, 0.0);                 // Intereses
-            statement.setDouble(13, montoRetiro);         // RetInteres
-            statement.setDouble(14, 0.0);                 // SaldoBanco
-            statement.setDouble(15, 0.0);                 // RetBanco
-            statement.setDouble(16, 0.0);                 // IngOtros
-            statement.setDouble(17, 0.0);                 // EgrOtros
-            statement.setDouble(18, 0.0);                 // GastosAdmon
-            statement.setString(19, esInfantil ? "INFANTE" : "ADULTO"); // TipoSocio
+            statement.setDouble(9, 0.0);                  // Intereses
+            statement.setDouble(10, 0.0);                 // AhoIngresos
+            statement.setDouble(11, 0.0);                 // AhoEgresos
+            statement.setDouble(12, saldoAhorros); // AhoSaldo
+            statement.setString(13, tipoSocio); // TipoSocio
+            statement.setDouble(14, montoRetiro);         // RetInteres - El monto del retiro va aquí
+            statement.setDouble(15, 0.0);                 // SaldoBanco
+            statement.setDouble(16, 0.0);                 // RetBanco
+            statement.setDouble(17, 0.0);                 // IngOtros
+            statement.setDouble(18, 0.0);                 // EgrOtros
+            statement.setDouble(19, 0.0);                 // GastosAdmon
             
             int filasAfectadas = statement.executeUpdate();
             
+            // Si se registró el movimiento correctamente, registrar también en la tabla InteresesRetirados
             if (filasAfectadas > 0) {
-                // Si la operación fue exitosa, confirmar la transacción
-                conexion.getConexion().commit();
-                exito = true;
-            } else {
-                // Si no se insertó ninguna fila, hacer rollback
-                conexion.getConexion().rollback();
+                // Obtener el ID del movimiento generado
+                ResultSet rs = statement.getGeneratedKeys();
+                int idMovimientoNuevo = -1;
+                
+                if (rs.next()) {
+                    idMovimientoNuevo = rs.getInt(1);
+                }
+                rs.close();
+                
+                // Si estamos usando una tabla específica para intereses retirados, registrar ahí también
+                String consultaIntereses = "INSERT INTO InteresesRetirados " +
+                    "(NoSocio, IdMovimiento, Año, Monto, Fecha, TipoSocio) " +
+                    "VALUES (?, ?, ?, ?, ?, ?)";
+                
+                try {
+                    PreparedStatement stmtIntereses = conexion.getConexion().prepareStatement(consultaIntereses);
+                    stmtIntereses.setInt(1, idSocio);
+                    stmtIntereses.setInt(2, idMovimientoNuevo);
+                    stmtIntereses.setInt(3, (int) movimiento.getOrDefault("AñoInteres", java.util.Calendar.getInstance().get(java.util.Calendar.YEAR)));
+                    stmtIntereses.setDouble(4, montoRetiro);
+                    stmtIntereses.setDate(5, new java.sql.Date(fecha.getTime()));
+                    stmtIntereses.setString(6, tipoSocio);
+                    
+                    stmtIntereses.executeUpdate();
+                    stmtIntereses.close();
+                } catch (SQLException ex) {
+                    // Si la tabla no existe, solo lo registraremos en MovimientosSocio
+                    // No consideramos esto un error fatal ya que el retiro ya se registró en la tabla principal
+                    System.out.println("Aviso: No se pudo registrar en InteresesRetirados: " + ex.getMessage());
+                }
+                
+                System.out.println("Retiro de intereses registrado correctamente para socio #" + idSocio + 
+                                 " por monto: " + montoRetiro + " del año: " + movimiento.getOrDefault("AñoInteres", java.util.Calendar.getInstance().get(java.util.Calendar.YEAR)));
+                return true;
             }
             
-            statement.close();
-            conexion.getConexion().setAutoCommit(true);
+            return false;
             
-        } catch (SQLException e) {
-            try {
-                // En caso de error, hacer rollback
-                conexion.getConexion().rollback();
-                conexion.getConexion().setAutoCommit(true);
-            } catch (SQLException ex) {
-                System.err.println("Error al hacer rollback: " + ex.getMessage());
-                ex.printStackTrace();
-            }
+        } catch (Exception e) {
             System.err.println("Error al registrar retiro de intereses: " + e.getMessage());
             e.printStackTrace();
+            return false;
         }
-        
-        return exito;
+    }
+      /**
+     * Actualiza la fecha de un movimiento específico
+     * @param idMovimiento ID del movimiento a actualizar
+     * @param fecha Nueva fecha para el movimiento
+     * @return true si la actualización fue exitosa, false en caso contrario
+     */
+    public boolean actualizarFechaMovimiento(int idMovimiento, java.util.Date fecha) {
+        try {
+            String consulta = "UPDATE MovimientosSocio SET Fecha = ? WHERE IdMov = ?";
+            
+            PreparedStatement statement = conexion.getConexion().prepareStatement(consulta);
+            statement.setDate(1, new java.sql.Date(fecha.getTime()));
+            statement.setInt(2, idMovimiento);
+            
+            int filasAfectadas = statement.executeUpdate();
+            statement.close();
+            
+            return filasAfectadas > 0;
+            
+        } catch (Exception e) {
+            System.err.println("Error al actualizar fecha de movimiento: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
     }
 }

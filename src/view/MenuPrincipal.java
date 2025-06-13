@@ -312,10 +312,18 @@ public class MenuPrincipal extends JFrame {
         });
         
         menuAyuda.add(itemAcercaDe);
-        
-        JMenu menuPremioAhorro = new JMenu("Premio Ahorro");
+          JMenu menuPremioAhorro = new JMenu("Premio Ahorro");
         menuPremioAhorro.setMnemonic(KeyEvent.VK_W);
         JMenuItem itemPremioAhorro = new JMenuItem("Premio Ahorro", KeyEvent.VK_W);
+        
+        // Añadir acción para abrir el panel de Premio al Ahorro
+        itemPremioAhorro.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JPanel panelPremioAhorro = new PremioAhorroPanel(MenuPrincipal.this);
+                cambiarPanel(panelPremioAhorro, "premioAhorro");
+            }
+        });
 
         menuPremioAhorro.add(itemPremioAhorro);
 
