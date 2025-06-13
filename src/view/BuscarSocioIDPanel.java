@@ -17,23 +17,23 @@ import java.util.Map;
  * Panel para buscar el ID de un socio por su nombre y apellido
  */
 public class BuscarSocioIDPanel extends JPanel {
-    private JTextField txtNombre;
-    private JTextField txtApellido;
-    private JCheckBox chkSocioInfantil;
-    private JButton btnBuscar;
-    private JTable tablaSocios;
-    private DefaultTableModel modeloTabla;
-    private MenuPrincipal menuPrincipal;
-    private SocioDAO socioDAO;
+    private JTextField txtNombre; // Campo para ingresar el nombre del socio
+    private JTextField txtApellido; // Campo para ingresar el apellido del socio
+    private JCheckBox chkSocioInfantil; // Checkbox para filtrar por tipo de socio infantil
+    private JButton btnBuscar; // Botón para buscar el socio
+    private JTable tablaSocios; // Tabla para mostrar los resultados de la búsqueda
+    private DefaultTableModel modeloTabla; // Modelo de la tabla para manejar los datos
+    private MenuPrincipal menuPrincipal; // Referencia al menú principal
+    private SocioDAO socioDAO;  // DAO para acceder a los datos de los socios
     
     /**
      * Constructor
      * @param menuPrincipal Referencia al menú principal para poder volver
      */
     public BuscarSocioIDPanel(MenuPrincipal menuPrincipal) {
-        this.menuPrincipal = menuPrincipal;
-        socioDAO = new SocioDAO();
-        inicializarComponentes();
+        this.menuPrincipal = menuPrincipal; // Guardar referencia al menú principal
+        socioDAO = new SocioDAO(); // Inicializar el DAO para acceder a los datos de los socios
+        inicializarComponentes(); // Llamar al método para inicializar los componentes del panel
     }
     
     /**

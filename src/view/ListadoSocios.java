@@ -2,6 +2,8 @@ package view;
 
 import java.util.*;
 import javax.swing.*;
+import javax.swing.table.TableColumnModel;
+import java.awt.Font;
 
 import tools.SocioDAO;
 import tools.TablaBase;
@@ -59,8 +61,36 @@ public class ListadoSocios extends JFrame {
             super(new String[] {"No. Socio", "Nombres", "Apellidos", "Dirección", 
                 "Teléfono", "Fecha Registro", "Presentado Por", "Población"});
             
-            this.esInfantil = esInfantil;
-            socioDAO = new SocioDAO();
+            this.esInfantil = esInfantil;            socioDAO = new SocioDAO();
+            
+            // Configurar apariencia de la tabla después de la inicialización
+            configurarAparienciaTabla();
+        }
+          /**
+         * Configura la apariencia visual de la tabla con letra más grande
+         */
+        private void configurarAparienciaTabla() {
+            // Aumentar tamaño de letra de la tabla
+            Font tableFont = new Font("Arial", Font.PLAIN, 14);
+            tabla.setFont(tableFont);
+            tabla.setRowHeight(24); // Aumentar altura de filas para adaptarse a la letra más grande
+            
+            // Aumentar tamaño de letra del encabezado
+            Font headerFont = new Font("Arial", Font.BOLD, 14);
+            tabla.getTableHeader().setFont(headerFont);
+            
+            // Cambiar el modo de redimensionamiento y configurar anchos específicos para cada columna
+            tabla.setAutoResizeMode(JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS);
+            
+            TableColumnModel columnModel = tabla.getColumnModel();
+            columnModel.getColumn(0).setPreferredWidth(50);   // No. Socio
+            columnModel.getColumn(1).setPreferredWidth(140);  // Nombres
+            columnModel.getColumn(2).setPreferredWidth(140);  // Apellidos
+            columnModel.getColumn(3).setPreferredWidth(250);  // Dirección 
+            columnModel.getColumn(4).setPreferredWidth(110);  // Teléfono
+            columnModel.getColumn(5).setPreferredWidth(120);  // Fecha Registro
+            columnModel.getColumn(6).setPreferredWidth(140);  // Presentado Por
+            columnModel.getColumn(7).setPreferredWidth(140);  // Población
         }
           @Override
         public void cargarDatos() {

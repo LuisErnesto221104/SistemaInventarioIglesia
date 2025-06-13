@@ -32,15 +32,31 @@ public abstract class TablaBase extends JPanel {
         
         // Panel superior con controles de búsqueda
         JPanel panelSuperior = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        
-        // Campo de búsqueda
+          // Campo de búsqueda
         JLabel lblBuscar = new JLabel("Buscar: ");
+        lblBuscar.setFont(new Font("Arial", Font.BOLD, 14));
+        
         txtBuscar = new JTextField(20);
+        txtBuscar.setFont(new Font("Arial", Font.PLAIN, 14));
+        
         btnBuscar = new JButton("Buscar");
+        btnBuscar.setFont(new Font("Arial", Font.BOLD, 14));
+        btnBuscar.setPreferredSize(new Dimension(100, 30));
+        
         btnRefrescar = new JButton("Actualizar");
+        btnRefrescar.setFont(new Font("Arial", Font.BOLD, 14));
+        btnRefrescar.setPreferredSize(new Dimension(120, 30));
+        
         btnExportar = new JButton("Exportar");
+        btnExportar.setFont(new Font("Arial", Font.BOLD, 14));
+        btnExportar.setPreferredSize(new Dimension(120, 30));
+        
         btnImprimir = new JButton("Imprimir");
+        btnImprimir.setFont(new Font("Arial", Font.BOLD, 14));
+        btnImprimir.setPreferredSize(new Dimension(120, 30));
+        
         lblContador = new JLabel("Total: 0 registros");
+        lblContador.setFont(new Font("Arial", Font.BOLD, 14));
         
         panelSuperior.add(lblBuscar);
         panelSuperior.add(txtBuscar);
@@ -70,12 +86,20 @@ public abstract class TablaBase extends JPanel {
         for (String columna : columnas) {
             modelo.addColumn(columna);
         }
-        
-        // Crear tabla
+          // Crear tabla
         tabla = new JTable(modelo);
         tabla.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         tabla.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
         tabla.getTableHeader().setReorderingAllowed(false);
+        
+        // Aumentar tamaño de letra en la tabla
+        Font tableFont = new Font("Arial", Font.PLAIN, 14);
+        tabla.setFont(tableFont);
+        tabla.setRowHeight(24); // Aumentar altura de filas para adaptarse a la letra más grande
+        
+        // Aumentar tamaño de letra del encabezado
+        Font headerFont = new Font("Arial", Font.BOLD, 14);
+        tabla.getTableHeader().setFont(headerFont);
         
         // Configurar renderizador para fechas
         tabla.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
@@ -154,12 +178,12 @@ public abstract class TablaBase extends JPanel {
      * Actualiza el contador de registros
      */
     protected void actualizarContador() {
-        int totalRegistros = tabla.getRowCount();
-        int totalSinFiltro = modelo.getRowCount();
-        if (totalRegistros != totalSinFiltro) {
-            lblContador.setText("Total: " + totalRegistros + " de " + totalSinFiltro + " registros");
+        int totalRegistros = tabla.getRowCount(); // Total de registros visibles después del filtro
+        int totalSinFiltro = modelo.getRowCount(); // Total de registros sin filtro aplicado
+        if (totalRegistros != totalSinFiltro) { // Si hay un filtro aplicado
+            lblContador.setText("Total: " + totalRegistros + " de " + totalSinFiltro + " registros"); // mostrar total filtrado y total sin filtro
         } else {
-            lblContador.setText("Total: " + totalRegistros + " registros");
+            lblContador.setText("Total: " + totalRegistros + " registros"); // mostrar solo total filtrado
         }
     }
       /**

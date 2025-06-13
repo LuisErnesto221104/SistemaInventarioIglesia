@@ -12,11 +12,11 @@ import java.awt.event.ActionListener;
 public class ValidationUtils {
 
     // Colores para la validación y estilo visual
-    public static final Color COLOR_CAMPO_VALIDO = Color.WHITE;
+    public static final Color COLOR_CAMPO_VALIDO = Color.WHITE; // Blanco para campos válidos
     public static final Color COLOR_ERROR = new Color(255, 221, 221); // Rosa claro para indicar error
-    public static final Color COLOR_CAMPO_DESHABILITADO = new Color(240, 240, 240);
-    public static final Color COLOR_BORDE_DESHABILITADO = new Color(200, 200, 200);
-    public static final Color COLOR_BORDE_REQUERIDO = new Color(255, 150, 150);
+    public static final Color COLOR_CAMPO_DESHABILITADO = new Color(240, 240, 240); // Gris claro para campos deshabilitados
+    public static final Color COLOR_BORDE_DESHABILITADO = new Color(200, 200, 200); // Gris medio para bordes de campos deshabilitados
+    public static final Color COLOR_BORDE_REQUERIDO = new Color(255, 150, 150); // Rosa suave para campos obligatorios
     public static final Color COLOR_CAMPO_LECTURA = new Color(245, 245, 255); // Azul muy claro para campos de solo lectura
     public static final Color COLOR_TEXTO_LECTURA = new Color(0, 0, 128); // Azul oscuro para datos existentes
     
@@ -26,8 +26,9 @@ public class ValidationUtils {
      * @return true si el campo es válido, false si está vacío
      */
     public static boolean validarCampoObligatorio(JTextField campo) {
-        boolean esValido = !campo.getText().trim().isEmpty();
+        boolean esValido = !campo.getText().trim().isEmpty(); // Verifica si el campo no está vacío
         
+        // Aplicar estilo visual según la validez del campo
         if (esValido) {
             // Campo es válido - estilo mejorado con animación visual
             aplicarEstiloValidado(campo);
@@ -36,7 +37,7 @@ public class ValidationUtils {
             aplicarEstiloError(campo);
         }
         
-        return esValido;
+        return esValido; // Retorna true si el campo es válido, false si está vacío
     }
     
     /**
@@ -44,7 +45,7 @@ public class ValidationUtils {
      * @param campo Campo al que aplicar el estilo
      */
     public static void aplicarEstiloValidado(JTextField campo) {
-        final Color colorOriginal = COLOR_CAMPO_VALIDO;
+        final Color colorOriginal = COLOR_CAMPO_VALIDO; // Blanco para campos válidos
         
         // Borde con estilo de éxito
         campo.setBorder(BorderFactory.createCompoundBorder(

@@ -2,6 +2,7 @@ package view;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
@@ -31,6 +32,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.RowFilter;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableRowSorter;
 
 import tools.SocioDAO;
@@ -69,8 +71,9 @@ public class ListadoSociosAdultosPanelIntegrado extends JPanel {
         
         // Panel de título
         JPanel panelTitulo = new JPanel(new BorderLayout());
-        
-        JButton btnVolver = new JButton("Volver");
+          JButton btnVolver = new JButton("Volver");
+        btnVolver.setFont(new Font("Arial", Font.BOLD, 14)); // Letra más grande
+        btnVolver.setPreferredSize(new Dimension(100, 30)); // Botón más grande
         btnVolver.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -88,9 +91,11 @@ public class ListadoSociosAdultosPanelIntegrado extends JPanel {
         JPanel panelBusqueda = new JPanel(new BorderLayout(10, 10));
         panelBusqueda.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
         
-        JPanel panelBuscar = new JPanel(new BorderLayout(5, 0));
-        JLabel lblBuscar = new JLabel("Buscar:");
+        JPanel panelBuscar = new JPanel(new BorderLayout(5, 0));        JLabel lblBuscar = new JLabel("Buscar:");
+        lblBuscar.setFont(new Font("Arial", Font.BOLD, 14)); // Letra más grande
+        
         txtBuscar = new JTextField();
+        txtBuscar.setFont(new Font("Arial", Font.PLAIN, 14)); // Letra más grande
         txtBuscar.addKeyListener(new KeyAdapter() {
             @Override
             public void keyReleased(KeyEvent e) {
@@ -103,6 +108,7 @@ public class ListadoSociosAdultosPanelIntegrado extends JPanel {
         
         JPanel panelContador = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         lblContador = new JLabel("Total: 0 registros");
+        lblContador.setFont(new Font("Arial", Font.BOLD, 14)); // Letra más grande
         panelContador.add(lblContador);
         
         panelBusqueda.add(panelBuscar, BorderLayout.CENTER);
@@ -121,13 +127,31 @@ public class ListadoSociosAdultosPanelIntegrado extends JPanel {
         
         // Agregar columnas
         String[] columnas = {"N° Socio", "Nombres", "Apellidos", "Dirección", "Teléfono", "Fecha Registro", "Presentado Por", "Población"};
-        modelo.setColumnIdentifiers(columnas);
-        
-        // Crear tabla
+        modelo.setColumnIdentifiers(columnas);        // Crear tabla
         tabla = new JTable(modelo);
         tabla.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        tabla.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+        tabla.setAutoResizeMode(JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS); // Cambio a AUTO_RESIZE_SUBSEQUENT_COLUMNS para poder controlar los anchos
         tabla.getTableHeader().setReorderingAllowed(false);
+        
+        // Aumentar tamaño de letra de la tabla
+        Font tableFont = new Font("Arial", Font.PLAIN, 14); // Tamaño de letra aumentado para los datos
+        tabla.setFont(tableFont);
+        tabla.setRowHeight(24); // Aumentar altura de filas para adaptarse a la letra más grande
+        
+        // Aumentar tamaño de letra del encabezado
+        Font headerFont = new Font("Arial", Font.BOLD, 14);
+        tabla.getTableHeader().setFont(headerFont);
+        
+        // Configurar anchos específicos para cada columna
+        TableColumnModel columnModel = tabla.getColumnModel();
+        columnModel.getColumn(0).setPreferredWidth(50);   // N° Socio 
+        columnModel.getColumn(1).setPreferredWidth(140);  // Nombres
+        columnModel.getColumn(2).setPreferredWidth(140);  // Apellidos
+        columnModel.getColumn(3).setPreferredWidth(250);  // Dirección
+        columnModel.getColumn(4).setPreferredWidth(110);  // Teléfono
+        columnModel.getColumn(5).setPreferredWidth(120);  // Fecha Registro
+        columnModel.getColumn(6).setPreferredWidth(140);  // Presentado Por
+        columnModel.getColumn(7).setPreferredWidth(140);  // Población
         
         // Configurar el renderizador para fechas
         tabla.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
@@ -141,18 +165,22 @@ public class ListadoSociosAdultosPanelIntegrado extends JPanel {
                     value = sdf.format((Date)value);
                 }
                 
-                return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+                Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+                c.setFont(tableFont); // Asegurar que todas las celdas usen la fuente más grande
+                
+                return c;
             }
         });
-        
-        // Agregar tabla a un scroll pane
+          // Agregar tabla a un scroll pane
         JScrollPane scrollPane = new JScrollPane(tabla);
         panelTabla.add(scrollPane, BorderLayout.CENTER);
         
+        
         // Panel de acciones
         JPanel panelAcciones = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        
-        JButton btnImprimir = new JButton("Imprimir");
+          JButton btnImprimir = new JButton("Imprimir");
+        btnImprimir.setFont(new Font("Arial", Font.BOLD, 14)); // Letra más grande
+        btnImprimir.setPreferredSize(new Dimension(120, 30)); // Botón más grande
         btnImprimir.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
