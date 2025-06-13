@@ -1140,15 +1140,20 @@ public class MovimientoSocioPanelIntegradoMejorado extends JPanel {
         btnAplicar.setPreferredSize(new Dimension(150, 40));
         
         btnCancelarActualizacion = new JButton("Cancelar Actualización");
+        btnCancelarActualizacion.setFont(new Font("Arial", Font.BOLD, 14));
+        btnCancelarActualizacion.setPreferredSize(new Dimension(250, 35));
         btnCancelarActualizacion.setVisible(false); // Inicialmente oculto
         
         btnLimpiar = new JButton("Limpiar");
+        btnLimpiar.setFont(new Font("Arial", Font.BOLD, 14));
         btnLimpiar.setPreferredSize(new Dimension(120, 35));
         
-        JButton btnImprimir = new JButton("Imprimir Todos los Movimientos");
+        JButton btnImprimir = new JButton("Imprimir Movimientos");
+        btnImprimir.setFont(new Font("Arial", Font.BOLD, 14));
         btnImprimir.setPreferredSize(new Dimension(250, 30));
         
         btnCerrar = new JButton("Cerrar");
+        btnCerrar.setFont(new Font("Arial", Font.BOLD, 14));
         btnCerrar.setPreferredSize(new Dimension(100, 35));
         
         // Agregar botones a los paneles
@@ -2360,6 +2365,9 @@ public class MovimientoSocioPanelIntegradoMejorado extends JPanel {
                 
                 // Cambiar el texto del botón para indicar que es una actualización
                 btnAplicar.setText("Actualizar Movimiento");
+                btnAplicar.setFont(new Font("Arial", Font.BOLD, 14));
+                btnAplicar.setPreferredSize(new Dimension(250, 35));
+
                 
                 // Mostrar el botón para cancelar actualización
                 btnCancelarActualizacion.setVisible(true);
