@@ -74,7 +74,7 @@ public class MenuPrincipal extends JFrame {
         itemBuscarSocioID.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                JPanel panelBuscarID = new BuscarSocioIDPanel(MenuPrincipal.this);
+                JPanel panelBuscarID = new BuscarSocioID(MenuPrincipal.this);
                 cambiarPanel(panelBuscarID, "buscarIDSocio");
             }
         });
@@ -83,7 +83,7 @@ public class MenuPrincipal extends JFrame {
         itemEliminarSocio.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                JPanel panelEliminarSocio = new EliminarSocioPanel(MenuPrincipal.this);
+                JPanel panelEliminarSocio = new EliminarSocio(MenuPrincipal.this);
                 cambiarPanel(panelEliminarSocio, "eliminarSocio");
             }
         });
@@ -92,7 +92,7 @@ public class MenuPrincipal extends JFrame {
         itemModificarSocio.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                JPanel panelModificarSocio = new ModificarSocioPanelIntegrado(MenuPrincipal.this);
+                JPanel panelModificarSocio = new ModificarSocio(MenuPrincipal.this);
                 cambiarPanel(panelModificarSocio, "modificar/BuscarSocio");
             }
         });
@@ -100,7 +100,7 @@ public class MenuPrincipal extends JFrame {
         itemNuevoSocio.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                JPanel panelNuevoSocio = new NuevoSocioPanelIntegrado(MenuPrincipal.this);
+                JPanel panelNuevoSocio = new NuevoSocio(MenuPrincipal.this);
                 cambiarPanel(panelNuevoSocio, "nuevoSocio");
             }
         });
@@ -137,7 +137,7 @@ public class MenuPrincipal extends JFrame {
         itemNuevoPrestamo.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                JPanel panelSociosAdultos = new ListadoSociosAdultosPanelIntegrado(MenuPrincipal.this);
+                JPanel panelSociosAdultos = new ListadoSociosAdultos(MenuPrincipal.this);
                 cambiarPanel(panelSociosAdultos, "sociosAdultos");
             }
         });
@@ -146,7 +146,7 @@ public class MenuPrincipal extends JFrame {
         itemConsultarPrestamo.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                JPanel panelSociosInfantiles = new ListadoSociosInfantilesPanelIntegrado(MenuPrincipal.this);
+                JPanel panelSociosInfantiles = new ListadoSociosInfantiles(MenuPrincipal.this);
                 cambiarPanel(panelSociosInfantiles, "sociosInfantiles");
             }
         });
@@ -166,7 +166,7 @@ public class MenuPrincipal extends JFrame {
         itemDeposito.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                JPanel panelMovimientoSocio = new MovimientoSocioPanelIntegradoMejorado(MenuPrincipal.this);
+                JPanel panelMovimientoSocio = new MovimientoSocio(MenuPrincipal.this);
                 cambiarPanel(panelMovimientoSocio, "movimientoSocio");
             }
         });
@@ -175,7 +175,7 @@ public class MenuPrincipal extends JFrame {
         itemRetiro.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                JPanel panelRetiroIntereses = new RetiroInteresesPanel(MenuPrincipal.this);
+                JPanel panelRetiroIntereses = new RetiroIntereses(MenuPrincipal.this);
                 cambiarPanel(panelRetiroIntereses, "retiroIntereses");
             }
         });
@@ -201,7 +201,7 @@ public class MenuPrincipal extends JFrame {
         itemReporteAnualAdultos.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                JPanel panelReporteAnualAdultos = new ReporteAnualAdultosPanel(MenuPrincipal.this);
+                JPanel panelReporteAnualAdultos = new ReporteAnualAdultos(MenuPrincipal.this);
                 cambiarPanel(panelReporteAnualAdultos, "reporteAnualAdultos");
             }
         });
@@ -210,7 +210,7 @@ public class MenuPrincipal extends JFrame {
         itemReporteAnualInfantes.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                JPanel panelReporteAnualInfantes = new ReporteAnualInfantesPanel(MenuPrincipal.this);
+                JPanel panelReporteAnualInfantes = new ReporteAnualInfantes(MenuPrincipal.this);
                 cambiarPanel(panelReporteAnualInfantes, "reporteAnualInfantes");
             }
         });
@@ -219,7 +219,7 @@ public class MenuPrincipal extends JFrame {
         itemReporteAnual.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                JPanel panelReporteAnualGeneral = new ReporteAnualGeneralPanel(MenuPrincipal.this);
+                JPanel panelReporteAnualGeneral = new ReporteAnualGeneral(MenuPrincipal.this);
                 cambiarPanel(panelReporteAnualGeneral, "reporteAnualGeneral");
             }
         });
@@ -228,7 +228,7 @@ public class MenuPrincipal extends JFrame {
         itemReporteDiarioAdultos.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                JPanel panelReporteDiarioAdultos = new ReporteDiarioAdultosPanel(MenuPrincipal.this);
+                JPanel panelReporteDiarioAdultos = new ReporteDiarioAdultos(MenuPrincipal.this);
                 cambiarPanel(panelReporteDiarioAdultos, "reporteDiarioAdultos");
             }
         });
@@ -236,7 +236,7 @@ public class MenuPrincipal extends JFrame {
         itemReporteDiarioInfantes.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                JPanel panelReporteDiarioInfantes = new ReporteDiarioInfantesPanel(MenuPrincipal.this);
+                JPanel panelReporteDiarioInfantes = new ReporteDiarioInfantes(MenuPrincipal.this);
                 cambiarPanel(panelReporteDiarioInfantes, "reporteDiarioInfantes");
             }
         });
@@ -245,7 +245,7 @@ public class MenuPrincipal extends JFrame {
         itemReporteMensualAdultos.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                JPanel panelReporteMensualAdultos = new ReporteMensualAdultosPanel(MenuPrincipal.this);
+                JPanel panelReporteMensualAdultos = new ReporteMensualAdultos(MenuPrincipal.this);
                 cambiarPanel(panelReporteMensualAdultos, "reporteMensualAdultos");
             }
         });
@@ -254,7 +254,7 @@ public class MenuPrincipal extends JFrame {
         itemReporteMensualInfantes.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                JPanel panelReporteMensualInfantes = new ReporteMensualInfantesPanel(MenuPrincipal.this);
+                JPanel panelReporteMensualInfantes = new ReporteMensualInfantes(MenuPrincipal.this);
                 cambiarPanel(panelReporteMensualInfantes, "reporteMensualInfantes");
             }
         });
@@ -262,7 +262,7 @@ public class MenuPrincipal extends JFrame {
         itemReporteDiarioGeneral.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                JPanel panelReporteDiarioGeneral = new ReporteDiarioGeneralPanel(MenuPrincipal.this);
+                JPanel panelReporteDiarioGeneral = new ReporteDiarioGeneral(MenuPrincipal.this);
                 cambiarPanel(panelReporteDiarioGeneral, "reporteDiarioGeneral");
             }
         });
@@ -271,7 +271,7 @@ public class MenuPrincipal extends JFrame {
         itemReporteMensual.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                JPanel panelReporteMensualGeneral = new ReporteMensualGeneralPanel(MenuPrincipal.this);
+                JPanel panelReporteMensualGeneral = new ReporteMensualGeneral(MenuPrincipal.this);
                 cambiarPanel(panelReporteMensualGeneral, "reporteMensualGeneral");
             }
         });
@@ -313,7 +313,7 @@ public class MenuPrincipal extends JFrame {
         itemPremioAhorro.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                JPanel panelPremioAhorro = new PremioAhorroPanel(MenuPrincipal.this);
+                JPanel panelPremioAhorro = new PremioAhorro(MenuPrincipal.this);
                 cambiarPanel(panelPremioAhorro, "premioAhorro");
             }
         });
